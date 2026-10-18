@@ -87,7 +87,7 @@ const Users = () => {
                         {u.usertype}
                       </span>
                     </td>
-                    <td className="fw-bold">${Number(u.balance || 0).toLocaleString()}</td>
+                    <td className="fw-bold">₹{Number(u.balance || 0).toLocaleString('en-IN')}</td>
                     <td className="font-monospace text-muted small">{u._id}</td>
                   </tr>
                 ))}

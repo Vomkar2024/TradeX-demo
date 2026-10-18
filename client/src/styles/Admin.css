@@ -1,31 +1,72 @@
-/* Admin & Dashboard Styles */
+/* TradeX Admin & Market Explorer Styles */
+
 .admin-container {
-  max-width: 1200px;
-  margin: 2rem auto;
+  max-width: 1300px;
+  margin: 1.5rem auto 3rem;
   padding: 0 1.5rem;
 }
 
+.home-page-wrapper {
+  background-color: var(--bg-main);
+  min-height: calc(100vh - 70px);
+}
+
+.badge-live-stream {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #a5b4fc;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.page-headline {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.page-subline {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+/* Search bar */
 .search-container {
   position: relative;
-  max-width: 600px;
-  margin: 1.5rem auto 2.5rem;
+  max-width: 640px;
+  margin: 1.75rem auto 2.5rem;
 }
 
 .search-container input {
   width: 100%;
-  padding: 0.85rem 1.25rem 0.85rem 3rem;
+  padding: 0.95rem 1.25rem 0.95rem 3.25rem;
   border-radius: 9999px;
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #111726;
+  color: #ffffff;
   font-size: 1rem;
   outline: none;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
 
 .search-container input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  background-color: #141c2e;
 }
 
 .search-container .search-icon {
@@ -38,78 +79,241 @@
   pointer-events: none;
 }
 
-.trending-stocks-header {
-  margin-bottom: 1.5rem;
-}
-
+/* Trending Stocks Header */
 .trending-stocks-header h3 {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #ffffff;
 }
 
+/* Modern Dark Stock Cards with Micro Candlestick Charts */
 .trending-stocks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.35rem;
   margin-bottom: 3rem;
 }
 
-.trending-stock {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 1.25rem;
+.trending-stock-card {
+  background: #0d1220;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1.35rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  justify-content: space-between;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-.trending-stock:hover {
+.trending-stock-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-  border-color: #2563eb;
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  background: #101628;
 }
 
-.trending-stock span {
+.stock-card-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
-.trending-stock span h5 {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 600;
+.stock-card-symbol {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.15rem;
+  font-family: var(--font-heading);
+}
+
+.stock-card-name {
   color: #64748b;
+  font-size: 0.8rem;
+  margin-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
 }
 
-.trending-stock span p {
-  margin: 0;
-  font-size: 0.95rem;
+.stock-card-price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: var(--font-mono);
+}
+
+.stock-card-pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  display: inline-block;
+  margin-top: 0.25rem;
+}
+
+.stock-card-pill.positive {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.stock-card-pill.negative {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+}
+
+.stock-card-chart-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  margin: 0.5rem 0 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.stock-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 0.65rem;
+}
+
+.stock-open-desk-hint {
+  font-size: 0.8rem;
+  color: #818cf8;
   font-weight: 600;
-  color: #0f172a;
+  transition: color 0.15s;
+}
+
+.trending-stock-card:hover .stock-open-desk-hint {
+  color: #a5b4fc;
 }
 
 .all-stocks-container {
-  margin-top: 2rem;
+  margin-top: 2.5rem;
 }
 
 .all-stocks-container h3 {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 1.5rem;
+  color: #ffffff;
+  margin-bottom: 1.25rem;
 }
 
 .loading-spinner {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 3rem;
-  color: #64748b;
+  padding: 3.5rem;
+  color: #94a3b8;
   font-weight: 500;
 }
+
+/* Category & Chart View Switcher Controls */
+.market-controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.category-tabs {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.25rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 0.25rem;
+}
+
+.category-tab-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.category-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.category-tab-btn.active {
+  background: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.chart-view-toggle {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.25rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 0.25rem;
+}
+
+.chart-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 0.38rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.chart-toggle-btn:hover {
+  color: #ffffff;
+}
+
+.chart-toggle-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.asset-badge-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-left: 0.45rem;
+  vertical-align: middle;
+}
+
+.asset-badge-tag.crypto {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.asset-badge-tag.equity {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+

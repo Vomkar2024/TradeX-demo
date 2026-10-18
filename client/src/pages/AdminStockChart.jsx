@@ -10,13 +10,19 @@ const AdminStockChart = () => {
     if (!containerRef.current) return;
     containerRef.current.innerHTML = '';
 
+    const cryptoSymbols = ['BTC', 'ETH', 'SOL', 'DOGE', 'XRP', 'ADA'];
+    const upperSym = (symbol || 'RELIANCE').toUpperCase();
+    const tvSymbol = cryptoSymbols.includes(upperSym)
+      ? `BINANCE:${upperSym}USDT`
+      : `BSE:${upperSym}`;
+
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
     script.type = 'text/javascript';
     script.async = true;
     script.innerHTML = JSON.stringify({
       autosize: true,
-      symbol: `NASDAQ:${symbol}`,
+      symbol: tvSymbol,
       interval: 'D',
       timezone: 'Etc/UTC',
       theme: 'dark',

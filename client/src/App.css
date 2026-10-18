@@ -1,28 +1,82 @@
-/* Navbar Styles */
+/* TradeX Navbar, Trading Desk & Application Styles */
+
+/* ==========================================================================
+   Navbar Styling (Pic 2 Logo & Modern Glassmorphism)
+   ========================================================================== */
 .navbar-custom {
-  background-color: #0f172a;
-  border-bottom: 1px solid #1e293b;
-  padding: 0.85rem 2rem;
+  background-color: #090c14;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.75rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
   z-index: 1000;
+  backdrop-filter: blur(12px);
 }
 
 .navbar-brand-custom {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #ffffff;
-  text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
+  text-decoration: none;
 }
 
-.navbar-brand-custom span {
+.brand-logo-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #5b5ff5 0%, #8b5cf6 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.5px;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+}
+
+.brand-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.brand-text-container {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand-demo-sub {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
   color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  margin-top: 1px;
+  display: inline-block;
+  align-self: flex-start;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+}
+
+.brand-pro-tag {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #c084fc;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .navbar-links {
@@ -36,10 +90,9 @@
 
 .navbar-links a {
   color: #94a3b8;
-  text-decoration: none;
   font-weight: 500;
-  font-size: 0.95rem;
-  transition: color 0.2s;
+  font-size: 0.925rem;
+  transition: color 0.2s ease;
 }
 
 .navbar-links a:hover,
@@ -53,24 +106,611 @@
   gap: 1rem;
 }
 
-.balance-badge {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #10b981;
-  padding: 0.4rem 0.9rem;
+/* Enhanced Try Demo Mode Button in Navbar */
+.btn-try-demo-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+}
+
+.btn-try-demo-nav:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.55);
+  color: #ffffff;
+}
+
+.demo-nav-icon {
+  font-size: 0.95rem;
+}
+
+.demo-mode-badge {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #c084fc;
+  padding: 0.35rem 0.85rem;
   border-radius: 9999px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+}
+
+.balance-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .user-badge {
-  background: rgba(56, 189, 248, 0.15);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  color: #38bdf8;
-  padding: 0.4rem 0.9rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  padding: 0.35rem 0.85rem;
   border-radius: 9999px;
+  font-size: 0.825rem;
   font-weight: 500;
+}
+
+/* User Dropdown Menu */
+.user-dropdown-container {
+  position: relative;
+}
+
+.user-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  padding: 0.3rem 0.85rem 0.3rem 0.45rem;
+  border-radius: 9999px;
   font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-dropdown-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.user-dropdown-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.user-dropdown-name {
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-dropdown-caret {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-left: 0.15rem;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 210px;
+  background: #0f1523;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 1050;
+  animation: dropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-dropdown-header {
+  padding: 0.45rem 0.65rem 0.35rem;
+}
+
+.dropdown-username {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #ffffff;
+}
+
+.dropdown-role {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.user-dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0.35rem 0;
+}
+
+.user-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.user-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.user-dropdown-item.item-reset:hover {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.user-dropdown-item.item-logout:hover {
+  background: rgba(244, 63, 94, 0.15);
+  color: #f43f5e;
+}
+
+.dropdown-icon {
+  font-size: 0.95rem;
+}
+
+/* ==========================================================================
+   Pic 1 Interactive Trading Desk Interface Styles
+   ========================================================================== */
+.desk-page-wrapper {
+  background-color: #07090f;
+  min-height: calc(100vh - 70px);
+  padding: 2rem 2.5rem;
+}
+
+.desk-main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Topbar matching Pic 1 */
+.desk-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.desk-topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.stock-select-wrapper {
+  margin-bottom: 0.25rem;
+}
+
+.stock-select-control {
+  background: #111726;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  outline: none;
+  min-width: 260px;
+  transition: border-color 0.2s;
+}
+
+.stock-select-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+}
+
+.desk-price-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.desk-big-price {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: var(--font-heading);
+  letter-spacing: -0.5px;
+}
+
+.desk-change-pill {
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.desk-change-pill.positive {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #10b981;
+}
+
+.desk-change-pill.negative {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #f43f5e;
+}
+
+.desk-subtitle {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+/* Timeframe & Line/Candle Pills */
+.desk-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.desk-pill-group {
+  background: #101625;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.65rem;
+  padding: 0.25rem;
+  display: inline-flex;
+  gap: 0.2rem;
+}
+
+.desk-pill-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border-radius: 0.45rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.desk-pill-btn:hover {
+  color: #ffffff;
+}
+
+.desk-pill-btn.active {
+  background: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+}
+
+/* Grid Layout matching Pic 1 */
+.desk-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .desk-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Main Chart Card */
+.desk-chart-card {
+  background: #0c101c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.25rem;
+  padding: 1.75rem 1.5rem 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.desk-chart-inner {
+  display: flex;
+  height: 480px;
+  position: relative;
+}
+
+.desk-yaxis-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: #64748b;
+  flex-shrink: 0;
+  padding-top: 1.25rem;
+  padding-bottom: 2.25rem;
+}
+
+.desk-svg-container {
+  flex-grow: 1;
+  height: 100%;
+  position: relative;
+}
+
+.desk-chart-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.desk-xaxis-timeline {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 0 1rem 0 4rem;
+  font-family: var(--font-mono);
+  font-size: 0.825rem;
+  color: #64748b;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.75rem;
+}
+
+/* Order Execution Slip */
+.desk-order-slip-card {
+  background: #0d1220;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.desk-slip-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.25rem;
+}
+
+/* BUY / SELL Switch */
+.desk-action-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #131929;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.65rem;
+  padding: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.desk-switch-btn {
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.65rem 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #64748b;
+}
+
+.desk-switch-btn.buy.active {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+}
+
+.desk-switch-btn.sell.active {
+  background: #f43f5e;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(244, 63, 94, 0.4);
+}
+
+.desk-slip-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 0.45rem;
+  display: block;
+}
+
+.desk-holdings-hint {
+  font-size: 0.78rem;
+  color: var(--accent-cyan);
+  font-weight: 500;
+}
+
+.desk-slip-select,
+.desk-slip-input {
+  width: 100%;
+  background: #121827;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-radius: 0.65rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.desk-slip-select:focus,
+.desk-slip-input:focus {
+  border-color: #6366f1;
+}
+
+/* Quick preset pills 5, 10, 25, 50 */
+.desk-quick-pills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.desk-quick-pill {
+  background: #131929;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  border-radius: 0.45rem;
+  padding: 0.45rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.desk-quick-pill:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.desk-quick-pill.active {
+  background: #1e263d;
+  border-color: #4f46e5;
+  color: #818cf8;
+}
+
+/* Order Summary Box */
+.desk-summary-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+  padding: 1.15rem;
+}
+
+.desk-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+  font-size: 0.9rem;
+}
+
+.summary-label {
+  color: #94a3b8;
+}
+
+.summary-val {
+  color: #f8fafc;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.fee-free {
+  color: #34d399 !important;
+}
+
+.desk-summary-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0.75rem 0;
+}
+
+.total-row {
+  margin-bottom: 0.75rem;
+}
+
+.summary-label-total {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.summary-val-total {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #818cf8;
+  font-family: var(--font-mono);
+}
+
+.desk-cash-available {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: right;
+}
+
+/* Execute Button */
+.desk-execute-btn {
+  width: 100%;
+  padding: 0.95rem 0;
+  border-radius: 0.65rem;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+.desk-execute-btn.btn-buy {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
+.desk-execute-btn.btn-buy:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
+}
+
+.desk-execute-btn.btn-sell {
+  background: #f43f5e;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.4);
+}
+
+.desk-execute-btn.btn-sell:hover:not(:disabled) {
+  background: #e11d48;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.55);
+}
+
+.desk-execute-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 /* Page Containers */
@@ -81,154 +721,14 @@
   width: 100%;
 }
 
-.page-header {
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #ffffff;
 }
 
 .page-subtitle {
-  color: #64748b;
+  color: #94a3b8;
   font-size: 1rem;
   margin-top: 0.25rem;
-}
-
-/* Orders and Transactions Page Styles (from Video) */
-.orderPage {
-  max-width: 1100px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
-
-.all-orders-container {
-  background: #ffffff;
-  border-radius: 1rem;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  padding: 2rem;
-}
-
-.all-orders-container-head {
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 1.25rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.all-orders-container-head h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-}
-
-.all-orders {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.all-orders-stock {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-radius: 0.75rem;
-  background: #f8fafc;
-  border: 1px solid var(--border-color);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.all-orders-stock:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.order-badge {
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.order-badge.buy {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.order-badge.sell {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-/* Stock Cards */
-.stock-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.stock-card {
-  background: #ffffff;
-  border-radius: 1rem;
-  border: 1px solid var(--border-color);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.stock-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: #38bdf8;
-}
-
-/* Tables */
-.custom-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: #ffffff;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-}
-
-.custom-table th {
-  background: #f1f5f9;
-  color: #475569;
-  font-weight: 600;
-  font-size: 0.875rem;
-  padding: 1rem 1.25rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.custom-table td {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 0.95rem;
-  color: #1e293b;
-}
-
-.custom-table tr:last-child td {
-  border-bottom: none;
-}
-
-.custom-table tr:hover td {
-  background: #f8fafc;
 }

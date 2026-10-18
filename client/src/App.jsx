@@ -38,7 +38,19 @@ function App() {
         <Route path="/admin-stock/:id" element={<AuthProtector><AdminStockChart /></AuthProtector>} />
       </Routes>
 
-      <Toaster position="top-right" />
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: '#131826',
+            color: '#f8fafc',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '10px',
+            fontSize: '0.9rem',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+          },
+        }}
+      />
     </div>
   );
 }

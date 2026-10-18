@@ -40,7 +40,7 @@ const buyStock = async (req, res) => {
             });
             await userData.save();
             await newOrder.save();
-            res.status(201).json({ message: "success" });
+            res.status(201).json({ message: "success", balance: userData.balance });
         } else {
             res.status(500).json({ message: "error occured" });
         }
@@ -81,7 +81,7 @@ const sellStock = async (req, res) => {
             });
             await userData.save();
             await newOrder.save();
-            res.status(201).json({ message: "success" });
+            res.status(201).json({ message: "success", balance: userData.balance });
         } else {
             res.status(404).json({ message: "no stocks" });
         }

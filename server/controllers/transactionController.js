@@ -35,7 +35,7 @@ const newTransaction = async (req, res) => {
             time: new Date().toISOString()
         });
         await transaction.save();
-        res.status(201).json({ message: "success" });
+        res.status(201).json({ message: "success", balance: userData?.balance });
     } catch (err) {
         res.status(500).json({ message: "error occured" });
     }

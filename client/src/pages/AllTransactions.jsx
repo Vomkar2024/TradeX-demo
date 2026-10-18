@@ -66,7 +66,7 @@ const AllTransactions = () => {
                       className="fw-bold mb-0"
                       style={{ color: isDeposit ? '#16a34a' : '#dc2626' }}
                     >
-                      {isDeposit ? '+' : '-'}${Number(t.amount).toLocaleString()}
+                      {isDeposit ? '+' : '-'}₹{Number(t.amount).toLocaleString('en-IN')}
                     </p>
                   </span>
                   <span>

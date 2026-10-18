@@ -1,0 +1,13 @@
+{
+  "name": "tradex-platform",
+  "version": "1.0.0",
+  "description": "TradeX - Simulated Stock Trading Platform",
+  "scripts": {
+    "dev": "npm --prefix client run dev",
+    "server": "npm --prefix server start",
+    "client": "npm --prefix client run dev",
+    "start": "npm --prefix client run dev"
+  },
+  "author": "",
+  "license": "ISC"
+}

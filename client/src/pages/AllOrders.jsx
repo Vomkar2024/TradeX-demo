@@ -57,11 +57,11 @@ const AllOrders = () => {
                   </span>
                   <span>
                     <h5 className="text-muted small mb-1">Execution Price</h5>
-                    <p className="mb-0">${Number(order.price).toFixed(2)}</p>
+                    <p className="mb-0">₹{Number(order.price).toFixed(2)}</p>
                   </span>
                   <span>
                     <h5 className="text-muted small mb-1">Total Value</h5>
-                    <p className="fw-bold mb-0">${Number(order.totalPrice).toLocaleString()}</p>
+                    <p className="fw-bold mb-0">₹{Number(order.totalPrice).toLocaleString('en-IN')}</p>
                   </span>
                   <span>
                     <h5 className="text-muted small mb-1">Action</h5>

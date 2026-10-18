@@ -4,14 +4,17 @@ import '../styles/Admin.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../components/axiosInstance';
+import MiniCandleChart from '../components/MiniCandleChart';
 
 const DEFAULT_ADMIN_STOCKS = [
-  { symbol: 'AAPL', shortName: 'Apple Inc.', regularMarketOpen: 232.50, regularMarketChangePercent: 1.25 },
-  { symbol: 'TSLA', shortName: 'Tesla, Inc.', regularMarketOpen: 218.80, regularMarketChangePercent: -0.85 },
-  { symbol: 'NVDA', shortName: 'NVIDIA Corporation', regularMarketOpen: 135.20, regularMarketChangePercent: 3.40 },
-  { symbol: 'MSFT', shortName: 'Microsoft Corporation', regularMarketOpen: 418.10, regularMarketChangePercent: 0.65 },
-  { symbol: 'AMZN', shortName: 'Amazon.com, Inc.', regularMarketOpen: 186.40, regularMarketChangePercent: 1.10 },
-  { symbol: 'GOOGL', shortName: 'Alphabet Inc.', regularMarketOpen: 164.75, regularMarketChangePercent: -0.45 },
+  { symbol: 'RELIANCE', shortName: 'Reliance Industries Ltd.', regularMarketOpen: 2945.50, regularMarketChangePercent: 1.42, stockExchange: 'NSE' },
+  { symbol: 'TCS', shortName: 'Tata Consultancy Services', regularMarketOpen: 4120.00, regularMarketChangePercent: 0.88, stockExchange: 'NSE' },
+  { symbol: 'HDFCBANK', shortName: 'HDFC Bank Limited', regularMarketOpen: 1680.75, regularMarketChangePercent: -0.45, stockExchange: 'NSE' },
+  { symbol: 'INFY', shortName: 'Infosys Limited', regularMarketOpen: 1875.30, regularMarketChangePercent: 2.15, stockExchange: 'NSE' },
+  { symbol: 'BTC', shortName: 'Bitcoin (INR)', regularMarketOpen: 5850000.00, regularMarketChangePercent: 2.35, stockExchange: 'Crypto' },
+  { symbol: 'ETH', shortName: 'Ethereum (INR)', regularMarketOpen: 225000.00, regularMarketChangePercent: 1.80, stockExchange: 'Crypto' },
+  { symbol: 'ZOMATO', shortName: 'Zomato Limited', regularMarketOpen: 265.80, regularMarketChangePercent: 4.25, stockExchange: 'NSE' },
+  { symbol: 'DOGE', shortName: 'Dogecoin (INR)', regularMarketOpen: 12.50, regularMarketChangePercent: 6.40, stockExchange: 'Crypto' },
 ];
 
 const Admin = () => {
@@ -22,37 +25,14 @@ const Admin = () => {
 
   const navigate = useNavigate();
 
-  const optionsTrending = {
-    method: 'GET',
-    url: 'https://mboum-finance.p.rapidapi.com/co/collections/most_actives',
-    params: { start: '0' },
-    headers: {
-      'X-RapidAPI-Key': '947b801f92msh96b919932628932p1a1413jsncb9cc7188719',
-      'X-RapidAPI-Host': 'mboum-finance.p.rapidapi.com',
-    },
-  };
-
   useEffect(() => {
     fetchTrending();
     fetchAllStocks();
   }, []);
 
   const fetchTrending = async () => {
-    try {
-      const res = await axios.request(optionsTrending);
-      if (res.data && Array.isArray(res.data.body)) {
-        setTrendingStocks(res.data.body);
-      } else if (Array.isArray(res.data)) {
-        setTrendingStocks(res.data);
-      } else {
-        setTrendingStocks(DEFAULT_ADMIN_STOCKS);
-      }
-    } catch (err) {
-      console.log('Using default stock feed:', err.message);
-      setTrendingStocks(DEFAULT_ADMIN_STOCKS);
-    } finally {
-      setLoading(false);
-    }
+    setTrendingStocks(DEFAULT_ADMIN_STOCKS);
+    setLoading(false);
   };
 
   const fetchAllStocks = async () => {
@@ -101,28 +81,49 @@ const Admin = () => {
           {filteredTrending.map((stock, index) => {
             const price = stock.regularMarketOpen || stock.regularMarketPrice || 100;
             const change = stock.regularMarketChangePercent || 0;
-            const isPositive = change > 0;
+            const isPositive = change >= 0;
 
             return (
               <div
-                className="trending-stock"
+                className="trending-stock-card"
                 key={stock.symbol + ' ' + index}
                 onClick={() => navigate(`/admin-stock/${stock.symbol}`)}
+                title={`Open surveillance view for ${stock.symbol}`}
               >
-                <span>
-                  <h5>Stock name</h5>
-                  <p>{stock.shortName || stock.symbol}</p>
-                </span>
-                <span>
-                  <h5>Symbol</h5>
-                  <p>{stock.symbol}</p>
-                </span>
-                <span>
-                  <h5>Price</h5>
-                  <p style={{ color: isPositive ? 'green' : 'red' }}>
-                    ${Number(price).toFixed(2)} ({isPositive ? '+' : ''}{Number(change).toFixed(2)}%)
-                  </p>
-                </span>
+                <div className="stock-card-top">
+                  <div>
+                    <h4 className="stock-card-symbol">{stock.symbol}</h4>
+                    <p className="stock-card-name">{stock.shortName || stock.symbol}</p>
+                  </div>
+                  <div className="text-end">
+                    <div className="stock-card-price">
+                      ₹
+                      {Number(price).toLocaleString('en-IN', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
+                    <div className={`stock-card-pill ${isPositive ? 'positive' : 'negative'}`}>
+                      {isPositive ? '▲ +' : '▼ '}
+                      {Number(change).toFixed(2)}%
+                    </div>
+                  </div>
+                </div>
+
+                <div className="stock-card-chart-area">
+                  <MiniCandleChart
+                    symbol={stock.symbol}
+                    price={price}
+                    change={change}
+                    width={240}
+                    height={40}
+                    type="line"
+                  />
+                </div>
+
+                <div className="stock-card-footer">
+                  <span className="stock-open-desk-hint">Surveillance Analytics →</span>
+                </div>
               </div>
             );
           })}
@@ -151,7 +152,7 @@ const Admin = () => {
                     <td className="fw-bold">{s.symbol}</td>
                     <td>{s.name}</td>
                     <td>{s.count}</td>
-                    <td className="fw-bold">${Number(s.totalPrice).toLocaleString()}</td>
+                    <td className="fw-bold">₹{Number(s.totalPrice).toLocaleString('en-IN')}</td>
                     <td>{s.stockExchange || 'NASDAQ'}</td>
                   </tr>
                 ))}

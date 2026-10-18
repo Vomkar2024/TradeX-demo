@@ -1,14 +1,27 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GeneralContext } from '../context/GeneralContext';
 
 const Navbar = () => {
-  const { logout } = useContext(GeneralContext);
+  const { logout, resetDemoData, loginDemo, balance } = useContext(GeneralContext);
   const navigate = useNavigate();
 
   const userType = localStorage.getItem('userType');
   const username = localStorage.getItem('username');
-  const balance = localStorage.getItem('balance');
+  const isDemo = localStorage.getItem('isDemoMode') === 'true';
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -18,7 +31,11 @@ const Navbar = () => {
     <nav className="navbar-custom">
       <div className="d-flex align-items-center gap-4">
         <Link to={userType === 'admin' ? '/admin' : userType === 'customer' ? '/home' : '/'} className="navbar-brand-custom">
-          Trade<span>X</span> Stocks
+          <div className="brand-logo-badge">TX</div>
+          <div className="brand-text-container">
+            <span className="brand-title">TradeX</span>
+            {isDemo && <span className="brand-demo-sub">DEMO</span>}
+          </div>
         </Link>
 
         {userType === 'customer' && (
@@ -45,18 +62,73 @@ const Navbar = () => {
           <>
             {userType === 'customer' && (
               <span className="balance-badge">
-                Balance: ${Number(balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                Balance: ₹{Number(balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             )}
-            <span className="user-badge">
-              {username} ({userType})
-            </span>
-            <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
-              Logout
-            </button>
+
+            <div className="user-dropdown-container" ref={dropdownRef}>
+              <button
+                type="button"
+                className="user-dropdown-btn"
+                onClick={() => setDropdownOpen((prev) => !prev)}
+                title="Account Settings & Options"
+              >
+                <div className="user-dropdown-avatar">
+                  {username ? username.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <span className="user-dropdown-name">{username}</span>
+                <span className="user-dropdown-caret">{dropdownOpen ? '▴' : '▾'}</span>
+              </button>
+
+              {dropdownOpen && (
+                <div className="user-dropdown-menu">
+                  <div className="user-dropdown-header">
+                    <div className="dropdown-username">{username}</div>
+                    <div className="dropdown-role">
+                      {isDemo ? '⚡ Simulated Demo Account' : `${userType.toUpperCase()} Account`}
+                    </div>
+                  </div>
+                  <div className="user-dropdown-divider"></div>
+                  {isDemo && (
+                    <button
+                      type="button"
+                      className="user-dropdown-item item-reset"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        resetDemoData();
+                      }}
+                      title="Reset demo capital to ₹500 and restore initial portfolio"
+                    >
+                      <span className="dropdown-icon">🔄</span>
+                      <span>Reset Demo</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="user-dropdown-item item-logout"
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    <span className="dropdown-icon">🚪</span>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         ) : (
-          <span className="text-secondary small">Welcome to TradeX</span>
+          <div className="d-flex align-items-center gap-3">
+            <button
+              className="btn-try-demo-nav"
+              onClick={() => loginDemo('customer')}
+              title="Launch instant simulated trading desk"
+            >
+              <span className="demo-nav-icon">⚡</span>
+              <span>Try Demo Mode</span>
+            </button>
+          </div>
         )}
       </div>
     </nav>
@@ -64,3 +136,5 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+

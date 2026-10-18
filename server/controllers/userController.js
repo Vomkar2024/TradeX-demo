@@ -16,6 +16,7 @@ const register = async (req, res) => {
             email,
             usertype,
             password: hashedPassword,
+            balance: 500,
         });
 
         const userCreated = await newUser.save();
@@ -45,7 +46,15 @@ const login = async (req, res) => {
     // app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
+
+        // Auto-seed demo accounts on demand if requested
+        if (!user && (email === "demo@tradex.com" || email === "admin@tradex.com")) {
+            const seedDemoAccounts = require("../db/seedDemo.js");
+            await seedDemoAccounts();
+            user = await User.findOne({ email });
+        }
+
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }

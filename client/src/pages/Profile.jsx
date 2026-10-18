@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axiosInstance from '../components/axiosInstance';
 import toast from 'react-hot-toast';
+import { GeneralContext } from '../context/GeneralContext';
 
 const Profile = () => {
+  const { balance, updateBalance } = useContext(GeneralContext);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [transType, setTransType] = useState('Deposit');
@@ -22,7 +24,7 @@ const Profile = () => {
       const res = await axiosInstance.get(`/fetch-user/${userId}`);
       setUser(res.data);
       if (res.data?.balance !== undefined) {
-        localStorage.setItem('balance', res.data.balance);
+        updateBalance(res.data.balance);
       }
     } catch (err) {
       console.error('Fetch user error:', err);
@@ -40,7 +42,7 @@ const Profile = () => {
       return;
     }
 
-    if (transType === 'Withdraw' && (user?.balance || 0) < transAmount) {
+    if (transType === 'Withdraw' && balance < transAmount) {
       toast.error('Insufficient account balance for this withdrawal');
       return;
     }
@@ -56,7 +58,13 @@ const Profile = () => {
 
       const res = await axiosInstance.post('/newTransaction', payload);
       if (res.status === 201) {
-        toast.success(`${transType} of $${transAmount.toLocaleString()} successful!`);
+        if (res.data?.balance !== undefined) {
+          updateBalance(res.data.balance);
+        } else {
+          const nextBal = transType === 'Deposit' ? balance + transAmount : balance - transAmount;
+          updateBalance(nextBal);
+        }
+        toast.success(`${transType} of ₹${transAmount.toLocaleString('en-IN')} successful!`);
         setAmount('');
         fetchProfile();
       }
@@ -108,7 +116,7 @@ const Profile = () => {
                 <div>
                   <span className="text-muted small">Current Balance</span>
                   <h3 className="fw-bold text-success mt-1 mb-0">
-                    ${Number(user?.balance || 0).toLocaleString()}
+                    ₹{Number(balance).toLocaleString('en-IN')}
                   </h3>
                 </div>
               </div>
@@ -153,9 +161,9 @@ const Profile = () => {
               </div>
 
               <div className="mb-4">
-                <label className="form-label small fw-semibold">Amount ($ USD)</label>
+                <label className="form-label small fw-semibold">Amount (₹ INR)</label>
                 <div className="input-group input-group-lg">
-                  <span className="input-group-text">$</span>
+                  <span className="input-group-text">₹</span>
                   <input
                     type="number"
                     min="1"
@@ -176,7 +184,7 @@ const Profile = () => {
                 }`}
                 disabled={transacting || !amount}
               >
-                {transacting ? 'Processing...' : `${transType} $${amount || 0}`}
+                {transacting ? 'Processing...' : `${transType} ₹${amount || 0}`}
               </button>
             </form>
           </div>
