@@ -44,7 +44,7 @@ graph TB
 
     subgraph DataTier ["Persistence Layer (Database)"]
         MongooseODM["Mongoose ODM (Schemas & Models)"]
-        MongoDB[(MongoDB Cluster<br/>users | stocks | orders | transactions)]
+        MongoDB[("MongoDB Cluster<br/>users • stocks • orders • transactions")]
         
         UserController --> MongooseODM
         StockController --> MongooseODM
