@@ -98,10 +98,80 @@ const fetchUsers = async (req, res) => {
     }
 };
 
+// Combined Forgot Password & Reset Password Handler
+const resetPassword = async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+    try {
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        let user = await User.findOne({ email: normalizedEmail });
+
+        // Auto-seed demo accounts on demand if requested
+        if (!user && (normalizedEmail === "demo@tradex.com" || normalizedEmail === "admin@tradex.com")) {
+            const seedDemoAccounts = require("../db/seedDemo.js");
+            await seedDemoAccounts();
+            user = await User.findOne({ email: normalizedEmail });
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: "No account found with this email" });
+        }
+
+        // Branch 1: Request OTP code (Forgot Password step)
+        if (!otp && !newPassword) {
+            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            user.resetPasswordToken = generatedOtp;
+            user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15-minute expiration
+            await user.save();
+
+            return res.status(200).json({
+                message: "Verification code generated successfully",
+                otp: generatedOtp,
+                email: user.email
+            });
+        }
+
+        // Branch 2: Verify OTP code and Set New Password (Reset Password step)
+        if (!otp || !newPassword) {
+            return res.status(400).json({ message: "Both verification code (OTP) and new password are required" });
+        }
+
+        if (!user.resetPasswordToken || user.resetPasswordToken !== String(otp).trim()) {
+            return res.status(400).json({ message: "Invalid verification code" });
+        }
+
+        if (user.resetPasswordExpires && user.resetPasswordExpires < Date.now()) {
+            return res.status(400).json({ message: "Verification code has expired. Please request a new code." });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        return res.status(200).json({
+            message: "Password reset successful! You can now sign in with your new password."
+        });
+    } catch (error) {
+        console.error("Forgot/Reset password error:", error);
+        return res.status(500).json({ message: "Server Error" });
+    }
+};
+
 module.exports = {
     fetchUsers,
     fetchUserById,
     logout,
     login,
-    register
+    register,
+    resetPassword
 };
+

@@ -3,154 +3,15 @@ import { BiSearch } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
 import MiniCandleChart from '../components/MiniCandleChart';
 import TickerTape from '../components/TickerTape';
+import {
+  getMarketAssets,
+  subscribeMarketUpdates,
+  saveMarketAssets,
+  DEFAULT_MARKET_ASSETS,
+} from '../utils/marketData';
 import '../styles/Admin.css';
 
-export const MARKET_AND_CRYPTO_ASSETS = [
-  // 1st place
-  {
-    symbol: 'RELIANCE',
-    shortName: 'Reliance Industries Ltd.',
-    regularMarketOpen: 2945.50,
-    regularMarketChangePercent: 1.42,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  // 2nd place
-  {
-    symbol: 'TCS',
-    shortName: 'Tata Consultancy Services',
-    regularMarketOpen: 4120.00,
-    regularMarketChangePercent: 0.88,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  // 3rd place: USDT Crypto
-  {
-    symbol: 'USDT',
-    shortName: 'Tether USD (USDT)',
-    regularMarketOpen: 88.50,
-    regularMarketChangePercent: 0.05,
-    category: 'Crypto',
-    exchange: 'Crypto',
-  },
-  // 4th place: HASMSTER Crypto
-  {
-    symbol: 'HASMSTER',
-    shortName: 'Hamster Kombat (HMSTR)',
-    regularMarketOpen: 0.28,
-    regularMarketChangePercent: 8.45,
-    category: 'Crypto',
-    exchange: 'Crypto',
-  },
-
-  // Equities (NSE/BSE)
-  {
-    symbol: 'HDFCBANK',
-    shortName: 'HDFC Bank Limited',
-    regularMarketOpen: 1680.75,
-    regularMarketChangePercent: -0.45,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  {
-    symbol: 'INFY',
-    shortName: 'Infosys Limited',
-    regularMarketOpen: 1875.30,
-    regularMarketChangePercent: 2.15,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  {
-    symbol: 'TATAMOTORS',
-    shortName: 'Tata Motors Ltd.',
-    regularMarketOpen: 965.40,
-    regularMarketChangePercent: 3.10,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  {
-    symbol: 'ICICIBANK',
-    shortName: 'ICICI Bank Ltd.',
-    regularMarketOpen: 1230.20,
-    regularMarketChangePercent: 0.65,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  {
-    symbol: 'ITC',
-    shortName: 'ITC Limited',
-    regularMarketOpen: 492.15,
-    regularMarketChangePercent: -0.32,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  {
-    symbol: 'ZOMATO',
-    shortName: 'Zomato Limited',
-    regularMarketOpen: 265.80,
-    regularMarketChangePercent: 4.25,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  {
-    symbol: 'TATASTEEL',
-    shortName: 'Tata Steel Limited',
-    regularMarketOpen: 158.40,
-    regularMarketChangePercent: -1.15,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-  {
-    symbol: 'IRFC',
-    shortName: 'IRFC Railway Finance Corp',
-    regularMarketOpen: 172.50,
-    regularMarketChangePercent: 1.80,
-    category: 'Equity',
-    exchange: 'NSE',
-  },
-
-  // Major Cryptocurrencies
-  {
-    symbol: 'BTC',
-    shortName: 'Bitcoin (INR)',
-    regularMarketOpen: 5850000.00,
-    regularMarketChangePercent: 2.35,
-    category: 'Crypto',
-    exchange: 'Crypto',
-  },
-  {
-    symbol: 'ETH',
-    shortName: 'Ethereum (INR)',
-    regularMarketOpen: 225000.00,
-    regularMarketChangePercent: 1.80,
-    category: 'Crypto',
-    exchange: 'Crypto',
-  },
-  {
-    symbol: 'SOL',
-    shortName: 'Solana (INR)',
-    regularMarketOpen: 13450.00,
-    regularMarketChangePercent: 5.60,
-    category: 'Crypto',
-    exchange: 'Crypto',
-  },
-  {
-    symbol: 'DOGE',
-    shortName: 'Dogecoin (INR)',
-    regularMarketOpen: 12.50,
-    regularMarketChangePercent: 6.40,
-    category: 'Crypto',
-    exchange: 'Crypto',
-  },
-  {
-    symbol: 'XRP',
-    shortName: 'Ripple (INR)',
-    regularMarketOpen: 48.20,
-    regularMarketChangePercent: -0.90,
-    category: 'Crypto',
-    exchange: 'Crypto',
-  },
-];
+export const MARKET_AND_CRYPTO_ASSETS = DEFAULT_MARKET_ASSETS;
 
 const Home = () => {
   const [trendingStocks, setTrendingStocks] = useState([]);
@@ -161,8 +22,45 @@ const Home = () => {
 
   useEffect(() => {
     // Load high-fidelity equities and cryptocurrencies
-    setTrendingStocks(MARKET_AND_CRYPTO_ASSETS);
+    setTrendingStocks(getMarketAssets());
     setLoading(false);
+
+    // Subscribe to synchronized price updates
+    const unsubscribe = subscribeMarketUpdates((updated) => {
+      setTrendingStocks(updated);
+    });
+
+    // Gentle live market ticker simulation (micro-fluctuations strictly under ₹5,000)
+    const tickInterval = setInterval(() => {
+      setTrendingStocks((prev) => {
+        if (!prev || prev.length === 0) return prev;
+        const copy = [...prev];
+        const randomIdx = Math.floor(Math.random() * copy.length);
+        const target = copy[randomIdx];
+        if (!target) return prev;
+
+        // Micro-jitter: -0.15% to +0.20%
+        const jitter = (Math.random() * 0.35 - 0.15) / 100;
+        let newPrice = Number((target.basePrice * (1 + jitter)).toFixed(2));
+        if (newPrice > 4950) newPrice = 4950;
+        if (newPrice < 1) newPrice = 1;
+
+        const newChangePct = Number((target.regularMarketChangePercent + (jitter * 100)).toFixed(2));
+        copy[randomIdx] = {
+          ...target,
+          basePrice: newPrice,
+          regularMarketOpen: newPrice,
+          regularMarketChangePercent: newChangePct,
+        };
+        saveMarketAssets(copy);
+        return copy;
+      });
+    }, 4500);
+
+    return () => {
+      unsubscribe();
+      clearInterval(tickInterval);
+    };
   }, []);
 
   const filteredStocks = trendingStocks.filter((stock) => {
@@ -190,8 +88,10 @@ const Home = () => {
 
       <div className="admin-container">
         <div className="text-center my-4">
-          <div className="badge-live-stream mb-2">
-            <span className="live-dot"></span> Real-Time Equity & Crypto Feed
+          <div className="d-flex justify-content-center align-items-center gap-2 mb-2 flex-wrap">
+            <div className="badge-live-stream">
+              <span className="live-dot"></span> Real-Time Equity & Crypto Feed
+            </div>
           </div>
           <h1 className="fw-bold page-headline">Markets & Digital Assets</h1>
         </div>

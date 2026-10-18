@@ -3,30 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../components/axiosInstance';
 import toast from 'react-hot-toast';
 import { GeneralContext } from '../context/GeneralContext';
-
-const STOCK_REGISTRY = {
-  // Major Equities & Blue Chips
-  RELIANCE: { symbol: 'RELIANCE', name: 'Reliance Industries Ltd.', exchange: 'NSE', basePrice: 2945.50, change: 41.25, changePct: 1.42, category: 'Equity' },
-  TCS: { symbol: 'TCS', name: 'Tata Consultancy Services', exchange: 'NSE', basePrice: 4120.00, change: 35.80, changePct: 0.88, category: 'Equity' },
-  HDFCBANK: { symbol: 'HDFCBANK', name: 'HDFC Bank Limited', exchange: 'NSE', basePrice: 1680.75, change: -7.60, changePct: -0.45, category: 'Equity' },
-  INFY: { symbol: 'INFY', name: 'Infosys Limited', exchange: 'NSE', basePrice: 1875.30, change: 39.50, changePct: 2.15, category: 'Equity' },
-  TATAMOTORS: { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd.', exchange: 'NSE', basePrice: 965.40, change: 29.00, changePct: 3.10, category: 'Equity' },
-  ICICIBANK: { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd.', exchange: 'NSE', basePrice: 1230.20, change: 7.95, changePct: 0.65, category: 'Equity' },
-  ITC: { symbol: 'ITC', name: 'ITC Limited', exchange: 'NSE', basePrice: 492.15, change: -1.60, changePct: -0.32, category: 'Equity' },
-  ZOMATO: { symbol: 'ZOMATO', name: 'Zomato Limited', exchange: 'NSE', basePrice: 265.80, change: 10.85, changePct: 4.25, category: 'Equity' },
-  TATASTEEL: { symbol: 'TATASTEEL', name: 'Tata Steel Limited', exchange: 'NSE', basePrice: 158.40, change: -1.85, changePct: -1.15, category: 'Equity' },
-  IRFC: { symbol: 'IRFC', name: 'IRFC Railway Finance Corp', exchange: 'NSE', basePrice: 172.50, change: 3.05, changePct: 1.80, category: 'Equity' },
-
-  // Cryptocurrencies (Priced in INR)
-  USDT: { symbol: 'USDT', name: 'Tether USD (USDT)', exchange: 'Crypto', basePrice: 88.50, change: 0.04, changePct: 0.05, category: 'Crypto' },
-  HASMSTER: { symbol: 'HASMSTER', name: 'Hamster Kombat (HMSTR)', exchange: 'Crypto', basePrice: 0.28, change: 0.02, changePct: 8.45, category: 'Crypto' },
-  HMSTR: { symbol: 'HMSTR', name: 'Hamster Kombat (HMSTR)', exchange: 'Crypto', basePrice: 0.28, change: 0.02, changePct: 8.45, category: 'Crypto' },
-  BTC: { symbol: 'BTC', name: 'Bitcoin (INR)', exchange: 'Crypto', basePrice: 5850000.00, change: 134200.00, changePct: 2.35, category: 'Crypto' },
-  ETH: { symbol: 'ETH', name: 'Ethereum (INR)', exchange: 'Crypto', basePrice: 225000.00, change: 3980.00, changePct: 1.80, category: 'Crypto' },
-  SOL: { symbol: 'SOL', name: 'Solana (INR)', exchange: 'Crypto', basePrice: 13450.00, change: 712.00, changePct: 5.60, category: 'Crypto' },
-  DOGE: { symbol: 'DOGE', name: 'Dogecoin (INR)', exchange: 'Crypto', basePrice: 12.50, change: 0.75, changePct: 6.40, category: 'Crypto' },
-  XRP: { symbol: 'XRP', name: 'Ripple (INR)', exchange: 'Crypto', basePrice: 48.20, change: -0.44, changePct: -0.90, category: 'Crypto' },
-};
+import {
+  getStockRegistry,
+  getAssetBySymbol,
+  subscribeMarketUpdates,
+} from '../utils/marketData';
 
 const TIMEFRAMES = ['1D', '1W', '1M', '1Y', 'ALL'];
 const QUANTITY_PRESETS = [1, 5, 10, 25];
@@ -38,6 +19,7 @@ const StockChart = () => {
 
   const initialSymbol = (paramSymbol || 'RELIANCE').toUpperCase();
   const [selectedSymbol, setSelectedSymbol] = useState(initialSymbol);
+  const [stockRegistry, setStockRegistry] = useState(getStockRegistry);
   const [timeframe, setTimeframe] = useState('1M');
   const [chartType, setChartType] = useState('Line'); // 'Line' | 'Candles'
   const [orderAction, setOrderAction] = useState('BUY'); // 'BUY' | 'SELL'
@@ -54,20 +36,22 @@ const StockChart = () => {
     }
   }, [paramSymbol]);
 
-  // Current stock details
+  // Listen to centralized market updates (under 5000)
+  useEffect(() => {
+    const unsubscribe = subscribeMarketUpdates(() => {
+      setStockRegistry(getStockRegistry());
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Current stock details (guaranteed realistic price strictly under ₹5,000)
   const currentStock = useMemo(() => {
-    if (STOCK_REGISTRY[selectedSymbol]) {
-      return STOCK_REGISTRY[selectedSymbol];
+    if (stockRegistry[selectedSymbol]) {
+      return stockRegistry[selectedSymbol];
     }
-    return {
-      symbol: selectedSymbol,
-      name: `${selectedSymbol} Security`,
-      exchange: 'NSE',
-      basePrice: 2945.50,
-      change: 15.20,
-      changePct: 0.85,
-    };
-  }, [selectedSymbol]);
+    return getAssetBySymbol(selectedSymbol);
+  }, [selectedSymbol, stockRegistry]);
+
 
   // Fetch user's current holdings for this symbol
   const userId = localStorage.getItem('userId');
@@ -242,9 +226,9 @@ const StockChart = () => {
                 value={selectedSymbol}
                 onChange={handleStockChange}
               >
-                {Object.keys(STOCK_REGISTRY).map((sym) => (
+                {Object.keys(stockRegistry).map((sym) => (
                   <option key={sym} value={sym}>
-                    {sym} — {STOCK_REGISTRY[sym].name}
+                    {sym} — {stockRegistry[sym].name}
                   </option>
                 ))}
               </select>

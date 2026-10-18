@@ -5,17 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../components/axiosInstance';
 import MiniCandleChart from '../components/MiniCandleChart';
-
-const DEFAULT_ADMIN_STOCKS = [
-  { symbol: 'RELIANCE', shortName: 'Reliance Industries Ltd.', regularMarketOpen: 2945.50, regularMarketChangePercent: 1.42, stockExchange: 'NSE' },
-  { symbol: 'TCS', shortName: 'Tata Consultancy Services', regularMarketOpen: 4120.00, regularMarketChangePercent: 0.88, stockExchange: 'NSE' },
-  { symbol: 'HDFCBANK', shortName: 'HDFC Bank Limited', regularMarketOpen: 1680.75, regularMarketChangePercent: -0.45, stockExchange: 'NSE' },
-  { symbol: 'INFY', shortName: 'Infosys Limited', regularMarketOpen: 1875.30, regularMarketChangePercent: 2.15, stockExchange: 'NSE' },
-  { symbol: 'BTC', shortName: 'Bitcoin (INR)', regularMarketOpen: 5850000.00, regularMarketChangePercent: 2.35, stockExchange: 'Crypto' },
-  { symbol: 'ETH', shortName: 'Ethereum (INR)', regularMarketOpen: 225000.00, regularMarketChangePercent: 1.80, stockExchange: 'Crypto' },
-  { symbol: 'ZOMATO', shortName: 'Zomato Limited', regularMarketOpen: 265.80, regularMarketChangePercent: 4.25, stockExchange: 'NSE' },
-  { symbol: 'DOGE', shortName: 'Dogecoin (INR)', regularMarketOpen: 12.50, regularMarketChangePercent: 6.40, stockExchange: 'Crypto' },
-];
+import { getMarketAssets, subscribeMarketUpdates } from '../utils/marketData';
 
 const Admin = () => {
   const [trendingStocks, setTrendingStocks] = useState([]);
@@ -28,10 +18,15 @@ const Admin = () => {
   useEffect(() => {
     fetchTrending();
     fetchAllStocks();
+
+    const unsubscribe = subscribeMarketUpdates((updated) => {
+      setTrendingStocks(updated);
+    });
+    return () => unsubscribe();
   }, []);
 
   const fetchTrending = async () => {
-    setTrendingStocks(DEFAULT_ADMIN_STOCKS);
+    setTrendingStocks(getMarketAssets());
     setLoading(false);
   };
 
