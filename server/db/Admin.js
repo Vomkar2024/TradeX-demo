@@ -1,1 +1,1 @@
-module.exports = require('../models/Admin');
+module.exports = require('../models/userModel.js');
