@@ -3,13 +3,11 @@ import Login from '../components/Login';
 import Register from '../components/Register';
 import TickerTape from '../components/TickerTape';
 import { GeneralContext } from '../context/GeneralContext';
-import { useNavigate } from 'react-router-dom';
 
 const Landing = () => {
   const [isLoginBox, setIsLoginBox] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { loginDemo } = useContext(GeneralContext);
-  const navigate = useNavigate();
 
   const handleClaimDemo = () => {
     loginDemo('customer');
@@ -17,7 +15,7 @@ const Landing = () => {
 
   return (
     <div className="landing-page-v2">
-      {/* Top Scrolling Ticker Tape from Pic 2 */}
+      {/* Top Scrolling Market Ticker Tape */}
       <TickerTape />
 
       <div className="landing-content-wrap">
@@ -25,7 +23,7 @@ const Landing = () => {
           <div className="row align-items-center justify-content-center">
             <div className="col-lg-10 col-xl-9 text-center">
               {!showAuthModal ? (
-                /* Hero Section (Pic 2 Content - Fades out when Sign In is clicked) */
+                /* Hero Section - Fades out when Sign In is clicked */
                 <div className="landing-hero-fade">
                   {/* Green Glow Pill Badge */}
                   <div className="mb-4">

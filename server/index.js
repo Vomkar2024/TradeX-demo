@@ -22,11 +22,21 @@ app.use(cors({
     credentials: true
 }));
 
+// Health check and connectivity verification endpoint
+app.get("/api/health", (req, res) => {
+    res.status(200).json({
+        status: "healthy",
+        service: "TradeX Server API",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 app.use([userRoutes, transactionRoutes, orderRoutes, stockRoutes]);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Running @ ${PORT}`);
+    console.log(`TradeX Server is running on port ${PORT}`);
 });
 
 module.exports = app;

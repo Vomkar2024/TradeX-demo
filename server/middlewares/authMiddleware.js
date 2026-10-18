@@ -1,22 +1,26 @@
 const jwt = require("jsonwebtoken");
 
+const JWT_SECRET = process.env.JWT_SECRET || "jwtSecretVeryConfidential";
+
 const auth = (req, res, next) => {
     try {
         const token = req.cookies.token;
-        if (!token) return res.status(400).send("Unauthorized");
-        const verified = jwt.verify(token, "jwtSecretVeryConfidential");
+        if (!token) {
+            return res.status(401).json({ message: "Authentication required. Please sign in to proceed." });
+        }
+        const verified = jwt.verify(token, JWT_SECRET);
         if (!verified) {
             res.clearCookie("token");
-            return res.status(400).send("Unauthorized");
+            return res.status(401).json({ message: "Invalid authentication credentials." });
         }
         req.user = verified;
         next();
     } catch (error) {
-        if (error.message === "jwt expired") {
+        if (error.name === "TokenExpiredError" || error.message === "jwt expired") {
             res.clearCookie("token");
-            return res.status(400).send("Unauthorized");
+            return res.status(401).json({ message: "Session has expired. Please sign in again." });
         }
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({ message: "An error occurred during authentication verification." });
     }
 };
 

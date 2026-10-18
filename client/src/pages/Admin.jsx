@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BiSearch } from 'react-icons/bi';
 import '../styles/Admin.css';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../components/axiosInstance';
 import MiniCandleChart from '../components/MiniCandleChart';
@@ -148,7 +147,7 @@ const Admin = () => {
                     <td>{s.name}</td>
                     <td>{s.count}</td>
                     <td className="fw-bold">₹{Number(s.totalPrice).toLocaleString('en-IN')}</td>
-                    <td>{s.stockExchange || 'NASDAQ'}</td>
+                    <td>{s.stockExchange || 'NSE'}</td>
                   </tr>
                 ))}
               </tbody>

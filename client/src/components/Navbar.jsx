@@ -1,10 +1,9 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { GeneralContext } from '../context/GeneralContext';
 
 const Navbar = () => {
   const { logout, resetDemoData, loginDemo, balance } = useContext(GeneralContext);
-  const navigate = useNavigate();
 
   const userType = localStorage.getItem('userType');
   const username = localStorage.getItem('username');

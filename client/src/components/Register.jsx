@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { GeneralContext } from '../context/GeneralContext';
 
 const Register = ({ setIsLoginBox }) => {
-  const { setUsername, setEmail, setPassword, setUsertype, register } = useContext(GeneralContext);
+  const { setUsername, setEmail, setPassword, register } = useContext(GeneralContext);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -65,7 +65,7 @@ const Register = ({ setIsLoginBox }) => {
         />
       </div>
 
-      {/* Account Designation (Customer Trader with $25k starting capital) */}
+      {/* Account Designation (Customer Trader with ₹500 starting capital) */}
       <div className="mb-4 text-start">
         <label className="auth-form-label">
           Account Designation

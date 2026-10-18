@@ -2,12 +2,14 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/userModel.js");
 
+const JWT_SECRET = process.env.JWT_SECRET || "jwtSecretVeryConfidential";
+
 const register = async (req, res) => {
     const { username, email, usertype, password } = req.body;
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
+            return res.status(400).json({ message: "An account with this email address is already registered." });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -23,7 +25,7 @@ const register = async (req, res) => {
 
         const token = jwt.sign(
             { id: userCreated._id },
-            "jwtSecretVeryConfidential",
+            JWT_SECRET,
             { expiresIn: 3600 }
         );
 
@@ -37,38 +39,37 @@ const register = async (req, res) => {
             token
         });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Server Error" });
+        console.error("User registration error:", error);
+        return res.status(500).json({ message: "An unexpected server error occurred during registration. Please try again." });
     }
 };
 
 const login = async (req, res) => {
-    // app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
         let user = await User.findOne({ email });
 
         // Auto-seed demo accounts on demand if requested
         if (!user && (email === "demo@tradex.com" || email === "admin@tradex.com")) {
-            const seedDemoAccounts = require("../db/seedDemo.js");
+            const seedDemoAccounts = require("../demoseed/seedDemo.js");
             await seedDemoAccounts();
             user = await User.findOne({ email });
         }
 
         if (!user) {
-            return res.status(401).json({ message: "Invalid email or password" });
+            return res.status(401).json({ message: "Invalid email or password. Please verify your credentials and try again." });
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid email or password" });
+            return res.status(401).json({ message: "Invalid email or password. Please verify your credentials and try again." });
         } else {
-            const token = jwt.sign({ user }, "jwtSecretVeryConfidential", { expiresIn: 3600 });
+            const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: 3600 });
             res.cookie("token", token);
             return res.json(user);
         }
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Server Error" });
+        console.error("User login error:", error);
+        return res.status(500).json({ message: "An unexpected server error occurred during authentication. Please try again." });
     }
 };
 
@@ -78,23 +79,25 @@ const logout = (req, res) => {
 };
 
 const fetchUserById = async (req, res) => {
-    // app.get('/fetch-user/:id', async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
         res.json(user);
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "error occured" });
+        console.error("Fetch user by ID error:", err);
+        res.status(500).json({ message: "An error occurred while retrieving user details." });
     }
 };
 
 const fetchUsers = async (req, res) => {
-    // app.get('/fetch-users', async (req, res) => {
     try {
         const users = await User.find();
         res.json(users);
     } catch (err) {
-        res.status(500).json({ message: "error occured" });
+        console.error("Fetch users error:", err);
+        res.status(500).json({ message: "An error occurred while retrieving the users list." });
     }
 };
 
@@ -111,13 +114,13 @@ const resetPassword = async (req, res) => {
 
         // Auto-seed demo accounts on demand if requested
         if (!user && (normalizedEmail === "demo@tradex.com" || normalizedEmail === "admin@tradex.com")) {
-            const seedDemoAccounts = require("../db/seedDemo.js");
+            const seedDemoAccounts = require("../demoseed/seedDemo.js");
             await seedDemoAccounts();
             user = await User.findOne({ email: normalizedEmail });
         }
 
         if (!user) {
-            return res.status(404).json({ message: "No account found with this email" });
+            return res.status(404).json({ message: "No TradeX account found associated with this email address." });
         }
 
         // Branch 1: Request OTP code (Forgot Password step)
@@ -136,11 +139,11 @@ const resetPassword = async (req, res) => {
 
         // Branch 2: Verify OTP code and Set New Password (Reset Password step)
         if (!otp || !newPassword) {
-            return res.status(400).json({ message: "Both verification code (OTP) and new password are required" });
+            return res.status(400).json({ message: "Both verification code (OTP) and new password are required." });
         }
 
         if (!user.resetPasswordToken || user.resetPasswordToken !== String(otp).trim()) {
-            return res.status(400).json({ message: "Invalid verification code" });
+            return res.status(400).json({ message: "Invalid verification code. Please check the 6-digit OTP and try again." });
         }
 
         if (user.resetPasswordExpires && user.resetPasswordExpires < Date.now()) {
@@ -148,7 +151,7 @@ const resetPassword = async (req, res) => {
         }
 
         if (newPassword.length < 6) {
-            return res.status(400).json({ message: "Password must be at least 6 characters" });
+            return res.status(400).json({ message: "Password must be at least 6 characters in length." });
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -162,7 +165,7 @@ const resetPassword = async (req, res) => {
         });
     } catch (error) {
         console.error("Forgot/Reset password error:", error);
-        return res.status(500).json({ message: "Server Error" });
+        return res.status(500).json({ message: "An unexpected server error occurred during password reset." });
     }
 };
 
