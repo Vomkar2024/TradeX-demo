@@ -1,0 +1,115 @@
+/* Admin & Dashboard Styles */
+.admin-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.search-container {
+  position: relative;
+  max-width: 600px;
+  margin: 1.5rem auto 2.5rem;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 0.85rem 1.25rem 0.85rem 3rem;
+  border-radius: 9999px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.search-container input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.search-container .search-icon {
+  position: absolute;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.35rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.trending-stocks-header {
+  margin-bottom: 1.5rem;
+}
+
+.trending-stocks-header h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.trending-stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+
+.trending-stock {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.trending-stock:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  border-color: #2563eb;
+}
+
+.trending-stock span {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trending-stock span h5 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.trending-stock span p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.all-stocks-container {
+  margin-top: 2rem;
+}
+
+.all-stocks-container h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  color: #64748b;
+  font-weight: 500;
+}
