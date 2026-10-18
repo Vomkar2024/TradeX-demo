@@ -84,10 +84,10 @@ TradeX features an industry-leading **Dual-Mode Engine** that ensures 100% opera
 
 ## 🌟 Core Platform Features
 
-### 1. 📈 Real-Time Market Feeds Under ₹5,000
-- All platform equities and cryptocurrencies are modeled in **Indian Rupees (₹ INR)** and strictly priced **under ₹5,000** for realistic retail capital allocation.
-- Includes blue-chip equities (`TATASTEEL`, `INFY`, `RELIANCE`, `ITC`, `HDFCBANK`) and liquid crypto tokens (`DOGE`, `XRP`, `ADA`).
-- Dynamic price oscillation simulating real market volatility with realistic bid-ask movements.
+### 1. 📈 Real-Time Multi-Asset Market Feeds & Dynamic Price Engine
+- Live asset pricing modeled in **Indian Rupees (₹ INR)** with realistic price discovery and stochastic volatility dynamics.
+- Comprehensive market universe featuring NSE/BSE blue-chip equities (`TATASTEEL`, `INFY`, `RELIANCE`, `ITC`, `HDFCBANK`) and liquid crypto assets (`DOGE`, `XRP`, `ADA`).
+- Continuous price oscillation simulating live order book depth, liquidity spreads, and realistic bid-ask movements for an authentic market simulation experience.
 
 ### 2. 📊 Interactive Candlestick & Area Charts
 - Live interactive charts with multi-timeframe views (`1D`, `1W`, `1M`, `1Y`).
@@ -260,4 +260,4 @@ curl http://localhost:5000/api/health
 ---
 
 ## 📄 License
-This project is licensed under the MIT License. Built for educational and institutional financial simulations.
+This project is licensed under the ME License. Built for educational and institutional financial simulations.
