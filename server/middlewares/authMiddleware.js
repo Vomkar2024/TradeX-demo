@@ -16,7 +16,7 @@ const auth = (req, res, next) => {
             res.clearCookie("token");
             return res.status(400).send("Unauthorized");
         }
-        res.status(500).send("Server Error");
+        res.status(500).send("Internal Server Error");
     }
 };
 
