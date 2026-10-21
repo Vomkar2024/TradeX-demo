@@ -13,13 +13,13 @@ function autoStartBackendPlugin() {
   return {
     name: 'auto-start-backend',
     configureServer(server) {
-      // Probe if backend is already listening on port 5000
-      const req = http.get('http://localhost:5000', (res) => {
-        console.log('\x1b[32m%s\x1b[0m', '⚡ [TradeX] Backend is already running on http://localhost:5000')
+      // Probe if backend is already listening on port 8000
+      const req = http.get('http://localhost:8000/api/health', (res) => {
+        console.log('\x1b[32m%s\x1b[0m', '⚡ [TradeX] Backend is already running on http://localhost:8000')
       })
 
       req.on('error', () => {
-        console.log('\x1b[36m%s\x1b[0m', '🚀 [TradeX] Auto-launching Express backend server on port 5000...')
+        console.log('\x1b[36m%s\x1b[0m', '🚀 [TradeX] Auto-launching Express backend server on port 8000...')
         const serverDir = path.resolve(__dirname, '../server')
         backendProcess = spawn('node', ['index.js'], {
           cwd: serverDir,
@@ -59,6 +59,6 @@ function autoStartBackendPlugin() {
 export default defineConfig({
   plugins: [react(), autoStartBackendPlugin()],
   server: {
-    port: 3000,
+    port: 5173,
   },
 })

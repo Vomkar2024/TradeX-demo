@@ -2,8 +2,10 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import demoStore from "../utils/demoStore";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: API_URL,
   withCredentials: true,
 });
 

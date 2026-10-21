@@ -34,7 +34,7 @@ app.get("/api/health", (req, res) => {
 
 app.use([userRoutes, transactionRoutes, orderRoutes, stockRoutes]);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`TradeX Server is running on port ${PORT}`);
 });

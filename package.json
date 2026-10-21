@@ -9,5 +9,8 @@
     "start": "npm --prefix client run dev"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "puppeteer-core": "^25.15.0"
+  }
 }

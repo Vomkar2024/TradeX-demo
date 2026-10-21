@@ -167,7 +167,7 @@ TradeX includes pre-configured, auto-seeding credentials for instant evaluation 
 
 | Role | Email Address | Password | Default Capital | Desk Access |
 | :--- | :--- | :--- | :--- | :--- |
-| **Customer Trader** | `demo@tradex.com` | `password123` | ₹25,000.00 | Trading Desk, Live Charts, Portfolio, History, Wallet |
+| **Customer Trader** | `trader@tradex.com` | `trader123` | ₹25,000.00 | Trading Desk, Live Charts, Portfolio, History, Wallet |
 | **Platform Administrator** | `admin@tradex.com` | `admin123` | ₹100,000.00 | Market Surveillance, Platform Equity Pool, User Directory, Global Ledger |
 
 ---
@@ -223,7 +223,7 @@ cd client
 npm install
 npm run dev
 ```
-Open [http://localhost:5173](http://localhost:5173). Sign in with `demo@tradex.com` / `password123` or create a new custom account.
+Open [http://localhost:5173](http://localhost:5173). Sign in with `trader@tradex.com` / `trader123` or create a new custom account.
 
 ---
 

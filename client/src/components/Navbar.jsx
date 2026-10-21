@@ -6,8 +6,11 @@ const Navbar = () => {
   const { logout, resetDemoData, loginDemo, balance } = useContext(GeneralContext);
 
   const userType = localStorage.getItem('userType');
-  const username = localStorage.getItem('username');
-  const isDemo = localStorage.getItem('isDemoMode') === 'true';
+  const rawUsername = localStorage.getItem('username');
+  const username = userType === 'admin' && (!rawUsername || rawUsername === 'Demo Administrator') 
+    ? 'Administrator' 
+    : rawUsername;
+  const isDemo = localStorage.getItem('isDemoMode') === 'true' && userType !== 'admin';
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -73,7 +76,7 @@ const Navbar = () => {
                 title="Account Settings & Options"
               >
                 <div className="user-dropdown-avatar">
-                  {username ? username.charAt(0).toUpperCase() : 'U'}
+                  {username ? username.charAt(0).toUpperCase() : 'A'}
                 </div>
                 <span className="user-dropdown-name">{username}</span>
                 <span className="user-dropdown-caret">{dropdownOpen ? '▴' : '▾'}</span>
@@ -84,7 +87,11 @@ const Navbar = () => {
                   <div className="user-dropdown-header">
                     <div className="dropdown-username">{username}</div>
                     <div className="dropdown-role">
-                      {isDemo ? '⚡ Simulated Demo Account' : `${userType.toUpperCase()} Account`}
+                      {userType === 'admin'
+                        ? 'System Administrator'
+                        : isDemo
+                        ? '⚡ Simulated Demo Account'
+                        : `${userType.toUpperCase()} Account`}
                     </div>
                   </div>
                   <div className="user-dropdown-divider"></div>
@@ -96,7 +103,7 @@ const Navbar = () => {
                         setDropdownOpen(false);
                         resetDemoData();
                       }}
-                      title="Reset demo capital to ₹500 and restore initial portfolio"
+                      title="Reset demo capital to ₹25,000 and restore initial portfolio"
                     >
                       <span className="dropdown-icon">🔄</span>
                       <span>Reset Demo</span>

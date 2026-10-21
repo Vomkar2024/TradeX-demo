@@ -55,13 +55,14 @@ export const GeneralContextProvider = ({ children }) => {
   const loginDemo = (role = "customer") => {
     const user = demoStore.initDemo(role);
     updateBalance(user.balance);
-    toast.success(
-      `Welcome to Demo Mode (${user.username})! ₹${Number(user.balance).toLocaleString('en-IN')} virtual funds ready.`
-    );
-    if (role === "customer") {
-      navigate("/home");
-    } else {
+    if (role === "admin") {
+      toast.success(`Welcome back, ${user.username}!`);
       navigate("/admin");
+    } else {
+      toast.success(
+        `Welcome to Demo Mode (${user.username})! ₹${Number(user.balance).toLocaleString('en-IN')} virtual funds ready.`
+      );
+      navigate("/home");
     }
   };
 
@@ -77,8 +78,8 @@ export const GeneralContextProvider = ({ children }) => {
       const loginInputs = { email, password };
       console.log("Login inputs:", loginInputs);
 
-      // Check if user is trying to use demo credentials directly
-      if (email.trim().toLowerCase() === "demo@tradex.com") {
+      // Check if user is trying to use demo/trader credentials directly
+      if (email.trim().toLowerCase() === "demo@tradex.com" || email.trim().toLowerCase() === "trader@tradex.com") {
         loginDemo("customer");
         return;
       }
@@ -90,7 +91,7 @@ export const GeneralContextProvider = ({ children }) => {
       const res = await axiosInstance.post("/login", loginInputs);
       const userData = res.data.user || res.data;
       const normalizedUserType = (userData.usertype || userData.UserType || "customer").toLowerCase();
-      const normalizedUsername = userData.username || userData.Username || "Trader";
+      const normalizedUsername = userData.username || userData.Username || (normalizedUserType === "admin" ? "Administrator" : "Trader");
       const normalizedBalance = Number(userData.balance ?? userData.cashBalance ?? 500);
 
       localStorage.removeItem("isDemoMode");
@@ -112,10 +113,12 @@ export const GeneralContextProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Login failed:", err);
-      // If server is unreachable and email contains 'demo' or 'admin', offer demo login
-      if (email.toLowerCase().includes("demo") || email.toLowerCase().includes("admin")) {
+      // If server is unreachable and email contains 'demo', 'trader', or 'admin', offer demo login
+      if (email.toLowerCase().includes("demo") || email.toLowerCase().includes("admin") || email.toLowerCase().includes("trader")) {
         const role = email.toLowerCase().includes("admin") ? "admin" : "customer";
-        toast("Logging in via Simulated Demo Mode...", { icon: "⚡" });
+        if (role !== "admin") {
+          toast("Logging in via Simulated Demo Mode...", { icon: "⚡" });
+        }
         loginDemo(role);
         return;
       }

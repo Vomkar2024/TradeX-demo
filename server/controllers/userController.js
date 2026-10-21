@@ -49,8 +49,8 @@ const login = async (req, res) => {
     try {
         let user = await User.findOne({ email });
 
-        // Auto-seed demo accounts on demand if requested
-        if (!user && (email === "demo@tradex.com" || email === "admin@tradex.com")) {
+        // Auto-seed demo/trader accounts on demand if requested
+        if (!user && (email === "trader@tradex.com" || email === "demo@tradex.com" || email === "admin@tradex.com")) {
             const seedDemoAccounts = require("../demoseed/seedDemo.js");
             await seedDemoAccounts();
             user = await User.findOne({ email });
@@ -112,8 +112,8 @@ const resetPassword = async (req, res) => {
         const normalizedEmail = email.trim().toLowerCase();
         let user = await User.findOne({ email: normalizedEmail });
 
-        // Auto-seed demo accounts on demand if requested
-        if (!user && (normalizedEmail === "demo@tradex.com" || normalizedEmail === "admin@tradex.com")) {
+        // Auto-seed demo/trader accounts on demand if requested
+        if (!user && (normalizedEmail === "trader@tradex.com" || normalizedEmail === "demo@tradex.com" || normalizedEmail === "admin@tradex.com")) {
             const seedDemoAccounts = require("../demoseed/seedDemo.js");
             await seedDemoAccounts();
             user = await User.findOne({ email: normalizedEmail });

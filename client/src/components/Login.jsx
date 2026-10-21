@@ -143,7 +143,7 @@ const Login = ({ setIsLoginBox }) => {
                 type="email"
                 className="form-control auth-input-clean w-100"
                 id="forgotEmailInput"
-                placeholder="e.g. demo@tradex.com"
+                placeholder="e.g. trader@tradex.com"
                 value={localEmail}
                 onChange={(e) => {
                   setLocalEmail(e.target.value);
@@ -171,13 +171,13 @@ const Login = ({ setIsLoginBox }) => {
                   type="button"
                   className="btn-quick-fill"
                   onClick={() => {
-                    setLocalEmail('demo@tradex.com');
-                    setEmail('demo@tradex.com');
+                    setLocalEmail('trader@tradex.com');
+                    setEmail('trader@tradex.com');
                   }}
-                  title="Auto-fill Demo Trader email"
+                  title="Auto-fill Trader email"
                 >
                   <span>👤 Trader:</span>
-                  <code>demo@tradex.com</code>
+                  <code>trader@tradex.com</code>
                 </button>
                 <button
                   type="button"
@@ -320,7 +320,7 @@ const Login = ({ setIsLoginBox }) => {
           type="email"
           className="form-control auth-input-clean w-100"
           id="loginEmailInput"
-          placeholder="e.g. demo@tradex.com"
+          placeholder="e.g. trader@tradex.com"
           value={localEmail}
           onChange={(e) => {
             setLocalEmail(e.target.value);
@@ -388,7 +388,7 @@ const Login = ({ setIsLoginBox }) => {
               <span className="demo-action-bolt">⚡</span>
             </div>
             <div className="demo-action-text text-start">
-              <div className="demo-action-heading">Launch ₹500 Demo Desk</div>
+              <div className="demo-action-heading">Launch ₹25,000 Demo Desk</div>
               <div className="demo-action-sub">Instant risk-free equity simulation • No password needed</div>
             </div>
             <div className="demo-action-arrow">→</div>
@@ -402,11 +402,11 @@ const Login = ({ setIsLoginBox }) => {
             <button
               type="button"
               className="btn-quick-fill"
-              onClick={() => fillCredentials('demo@tradex.com', 'demo123')}
-              title="Auto-fill Demo Trader credentials"
+              onClick={() => fillCredentials('trader@tradex.com', 'trader123')}
+              title="Auto-fill Trader credentials"
             >
               <span>👤 Trader:</span>
-              <code>demo@tradex.com</code>
+              <code>trader@tradex.com</code>
             </button>
             <button
               type="button"

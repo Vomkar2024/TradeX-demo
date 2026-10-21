@@ -2,16 +2,16 @@
 // Provides high-fidelity simulated trading, balances, portfolio holdings, orders, and ledger.
 
 const DEMO_CUSTOMER = {
-  _id: "demo_cust_101",
-  username: "Demo Trader",
-  email: "demo@tradex.com",
+  _id: "usr_cust_101",
+  username: "Trader",
+  email: "trader@tradex.com",
   usertype: "customer",
   balance: 25000,
 };
 
 const DEMO_ADMIN = {
-  _id: "demo_admin_999",
-  username: "Demo Administrator",
+  _id: "adm_99901",
+  username: "Administrator",
   email: "admin@tradex.com",
   usertype: "admin",
   balance: 100000,
@@ -19,8 +19,8 @@ const DEMO_ADMIN = {
 
 const INITIAL_STOCKS = [
   {
-    _id: "demo_stock_1",
-    user: "demo_cust_101",
+    _id: "stk_101",
+    user: "usr_cust_101",
     symbol: "TATASTEEL",
     name: "Tata Steel Limited",
     price: 158.40,
@@ -29,8 +29,8 @@ const INITIAL_STOCKS = [
     stockExchange: "NSE",
   },
   {
-    _id: "demo_stock_2",
-    user: "demo_cust_101",
+    _id: "stk_102",
+    user: "usr_cust_101",
     symbol: "DOGE",
     name: "Dogecoin (INR)",
     price: 12.50,
@@ -42,8 +42,8 @@ const INITIAL_STOCKS = [
 
 const INITIAL_ORDERS = [
   {
-    _id: "demo_ord_1",
-    user: "demo_cust_101",
+    _id: "ord_101",
+    user: "usr_cust_101",
     symbol: "TATASTEEL",
     name: "Tata Steel Limited",
     stockType: "Equity",
@@ -55,8 +55,8 @@ const INITIAL_ORDERS = [
     date: new Date(Date.now() - 3600000 * 24).toISOString(),
   },
   {
-    _id: "demo_ord_2",
-    user: "demo_cust_101",
+    _id: "ord_102",
+    user: "usr_cust_101",
     symbol: "DOGE",
     name: "Dogecoin (INR)",
     stockType: "Crypto",
@@ -67,31 +67,79 @@ const INITIAL_ORDERS = [
     orderStatus: "Completed",
     date: new Date(Date.now() - 3600000 * 18).toISOString(),
   },
+  {
+    _id: "ord_103",
+    user: "usr_sim_01",
+    symbol: "INFY",
+    name: "Infosys Limited",
+    stockType: "Equity",
+    price: 1892.40,
+    count: 5,
+    totalPrice: 9462.00,
+    orderType: "Sell",
+    orderStatus: "Completed",
+    date: new Date(Date.now() - 3600000 * 8).toISOString(),
+  },
+  {
+    _id: "ord_104",
+    user: "usr_sim_02",
+    symbol: "RELIANCE",
+    name: "Reliance Industries",
+    stockType: "Equity",
+    price: 2940.50,
+    count: 10,
+    totalPrice: 29405.00,
+    orderType: "Buy",
+    orderStatus: "Completed",
+    date: new Date(Date.now() - 3600000 * 2).toISOString(),
+  },
 ];
 
 const INITIAL_TRANSACTIONS = [
   {
-    _id: "demo_tx_101",
-    user: "demo_cust_101",
+    _id: "tx_101",
+    user: "usr_cust_101",
     type: "Deposit",
     paymentMode: "UPI",
     amount: 25000,
     time: new Date(Date.now() - 3600000 * 48).toISOString(),
   },
+  {
+    _id: "tx_102",
+    user: "usr_sim_01",
+    type: "Deposit",
+    paymentMode: "Net Banking",
+    amount: 50000,
+    time: new Date(Date.now() - 3600000 * 24).toISOString(),
+  },
+  {
+    _id: "tx_103",
+    user: "usr_sim_02",
+    type: "Withdraw",
+    paymentMode: "IMPS",
+    amount: 15000,
+    time: new Date(Date.now() - 3600000 * 6).toISOString(),
+  },
 ];
 
 const DEMO_PLATFORM_USERS = [
-  DEMO_CUSTOMER,
+  {
+    _id: "usr_cust_101",
+    username: "Active Trader",
+    email: "trader@tradex.com",
+    usertype: "customer",
+    balance: 25000,
+  },
   DEMO_ADMIN,
   {
-    _id: "user_sim_01",
+    _id: "usr_sim_01",
     username: "Alex Morgan",
     email: "alex@tradex.com",
     usertype: "customer",
     balance: 34200,
   },
   {
-    _id: "user_sim_02",
+    _id: "usr_sim_02",
     username: "Jordan Hayes",
     email: "jordan@tradex.com",
     usertype: "customer",
@@ -104,16 +152,54 @@ export const demoStore = {
     try {
       const isDemo = localStorage.getItem("isDemoMode") === "true";
       const userType = localStorage.getItem("userType") || "customer";
+      const rawUsername = localStorage.getItem("username");
+      const rawUserId = localStorage.getItem("userId");
       const rawBalance = localStorage.getItem("balance");
+
+      // Auto-sanitize admin session so admin panel never shows "Demo Administrator" or demo IDs
+      if (userType === "admin") {
+        if (rawUsername === "Demo Administrator" || !rawUsername) {
+          localStorage.setItem("username", "Administrator");
+        }
+        if (rawUserId === "demo_admin_999" || !rawUserId || rawUserId.startsWith("demo_")) {
+          localStorage.setItem("userId", "adm_99901");
+        }
+      }
+
+      // Sanitize cached stocks if they contain demo_ prefixes
+      const rawStocks = localStorage.getItem("tradex_demo_stocks");
+      if (rawStocks && (rawStocks.includes("demo_cust_101") || rawStocks.includes("demo_stock_"))) {
+        const cleanedStocks = rawStocks
+          .replace(/demo_cust_101/g, "usr_cust_101")
+          .replace(/demo_stock_/g, "stk_");
+        localStorage.setItem("tradex_demo_stocks", cleanedStocks);
+      }
+
+      // Sanitize cached orders if they contain demo_ prefixes
+      const rawOrders = localStorage.getItem("tradex_demo_orders");
+      if (rawOrders && (rawOrders.includes("demo_cust_101") || rawOrders.includes("demo_ord_"))) {
+        const cleanedOrders = rawOrders
+          .replace(/demo_cust_101/g, "usr_cust_101")
+          .replace(/demo_ord_/g, "ord_");
+        localStorage.setItem("tradex_demo_orders", cleanedOrders);
+      }
+
+      // Sanitize cached transactions if they contain demo_ prefixes
       const rawTx = localStorage.getItem("tradex_demo_transactions");
+      if (rawTx && (rawTx.includes("demo_cust_101") || rawTx.includes("demo_tx_") || rawTx.includes('"amount":500'))) {
+        let cleanedTx = rawTx
+          .replace(/demo_cust_101/g, "usr_cust_101")
+          .replace(/demo_tx_/g, "tx_");
+        if (cleanedTx.includes('"amount":500')) {
+          cleanedTx = JSON.stringify(INITIAL_TRANSACTIONS);
+        }
+        localStorage.setItem("tradex_demo_transactions", cleanedTx);
+      }
 
       // Auto-upgrade demo customer balance to 25,000 if currently set to legacy 500
       if (isDemo && userType === "customer" && (rawBalance === "500" || !rawBalance)) {
         localStorage.setItem("balance", "25000");
         window.dispatchEvent(new CustomEvent("balanceUpdated", { detail: 25000 }));
-        if (rawTx && rawTx.includes('"amount":500')) {
-          localStorage.setItem("tradex_demo_transactions", JSON.stringify(INITIAL_TRANSACTIONS));
-        }
       }
     } catch (e) {
       console.warn("Demo storage migration error:", e);
@@ -187,7 +273,7 @@ export const demoStore = {
     const currentBalance = Number(localStorage.getItem("balance") || 0);
 
     if (currentBalance < Number(totalPrice)) {
-      throw new Error("Insufficient funds in demo account");
+      throw new Error("Insufficient funds in trading account");
     }
 
     const existingIndex = stocks.findIndex((s) => s.symbol === symbol && s.user === user);
@@ -206,14 +292,14 @@ export const demoStore = {
       };
     } else {
       stocks.push({
-        _id: "demo_stock_" + Date.now(),
+        _id: "stk_" + Date.now(),
         user,
         symbol,
         name: name || symbol,
         price: Number(price),
         count: Number(count),
         totalPrice: Number(totalPrice),
-        stockExchange: stockExchange || "NASDAQ",
+        stockExchange: stockExchange || "NSE",
       });
     }
 
@@ -225,7 +311,7 @@ export const demoStore = {
 
     const orders = this.getOrders();
     orders.unshift({
-      _id: "demo_ord_" + Date.now(),
+      _id: "ord_" + Date.now(),
       user,
       symbol,
       name: name || symbol,
@@ -279,7 +365,7 @@ export const demoStore = {
 
     const orders = this.getOrders();
     orders.unshift({
-      _id: "demo_ord_" + Date.now(),
+      _id: "ord_" + Date.now(),
       user,
       symbol,
       name: name || targetStock.name || symbol,
@@ -325,7 +411,7 @@ export const demoStore = {
       newBalance = currentBalance + numAmount;
     } else if (type.toLowerCase() === "withdraw") {
       if (currentBalance < numAmount) {
-        throw new Error("Insufficient demo balance for withdrawal");
+        throw new Error("Insufficient balance for withdrawal");
       }
       newBalance = currentBalance - numAmount;
     }
@@ -335,7 +421,7 @@ export const demoStore = {
 
     const txs = this.getTransactions();
     txs.unshift({
-      _id: "demo_tx_" + Date.now(),
+      _id: "tx_" + Date.now(),
       user,
       type,
       paymentMode: paymentMode || "Net Banking",
@@ -357,7 +443,7 @@ export const demoStore = {
   getAllUsers() {
     const currentCustBalance = Number(localStorage.getItem("balance") || 25000);
     return DEMO_PLATFORM_USERS.map((u) => {
-      if (u._id === DEMO_CUSTOMER._id) {
+      if (u._id === "usr_cust_101") {
         return { ...u, balance: currentCustBalance };
       }
       return u;

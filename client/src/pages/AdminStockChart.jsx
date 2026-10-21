@@ -1,18 +1,21 @@
 import React, { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import '../styles/Admin.css';
 
 const AdminStockChart = () => {
   const { id: symbol } = useParams();
   const navigate = useNavigate();
   const containerRef = useRef(null);
 
+  const cryptoSymbols = ['BTC', 'ETH', 'SOL', 'DOGE', 'XRP', 'ADA'];
+  const upperSym = (symbol || 'RELIANCE').toUpperCase();
+  const isCrypto = cryptoSymbols.includes(upperSym);
+
   useEffect(() => {
     if (!containerRef.current) return;
     containerRef.current.innerHTML = '';
 
-    const cryptoSymbols = ['BTC', 'ETH', 'SOL', 'DOGE', 'XRP', 'ADA'];
-    const upperSym = (symbol || 'RELIANCE').toUpperCase();
-    const tvSymbol = cryptoSymbols.includes(upperSym)
+    const tvSymbol = isCrypto
       ? `BINANCE:${upperSym}USDT`
       : `BSE:${upperSym}`;
 
@@ -34,20 +37,35 @@ const AdminStockChart = () => {
     });
 
     containerRef.current.appendChild(script);
-  }, [symbol]);
+  }, [symbol, upperSym, isCrypto]);
 
   return (
     <div className="page-container">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
-          <button className="btn btn-outline-secondary btn-sm mb-2" onClick={() => navigate('/admin')}>
-            ← Back to Admin Console
+          <button
+            type="button"
+            className="btn btn-outline-light btn-sm mb-3 d-flex align-items-center gap-2"
+            onClick={() => navigate('/admin')}
+          >
+            ← Return to Surveillance Console
           </button>
-          <h1 className="h2 fw-bold text-dark mb-1">Surveillance: {symbol.toUpperCase()}</h1>
-          <p className="text-muted mb-0">High-resolution institutional price action & volume breakdown</p>
+          <div className="d-flex align-items-center gap-3">
+            <h1 className="page-title mb-0">Surveillance: {upperSym}</h1>
+            <span className={`asset-badge-tag ${isCrypto ? 'crypto' : 'equity'}`}>
+              {isCrypto ? 'CRYPTO PAIR (BINANCE)' : 'EQUITY (NSE/BSE)'}
+            </span>
+          </div>
+          <p className="page-subtitle mb-0 mt-1">High-resolution institutional price action, depth, & volume analytics</p>
         </div>
-        <div>
-          <span className="badge bg-danger p-2 fs-6">Admin Mode</span>
+
+        <div className="d-flex align-items-center gap-2">
+          <span className="badge bg-danger px-3 py-2 fw-bold" style={{ letterSpacing: '0.04em' }}>
+            🛡️ SURVEILLANCE DESK
+          </span>
+          <span className="badge-live-stream">
+            <span className="live-dot"></span> LIVE TICK
+          </span>
         </div>
       </div>
 

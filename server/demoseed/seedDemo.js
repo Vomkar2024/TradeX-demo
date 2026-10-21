@@ -6,7 +6,31 @@ const Transaction = require("../models/transactionModel.js");
 
 const seedDemoAccounts = async () => {
   try {
-    // 1. Check or create Demo Customer
+    // 1. Check or create Trader Customer (trader@tradex.com)
+    let traderCustomer = await User.findOne({ email: "trader@tradex.com" });
+    if (!traderCustomer) {
+      const hashedTraderPass = await bcrypt.hash("trader123", 10);
+      traderCustomer = await User.create({
+        username: "Trader",
+        email: "trader@tradex.com",
+        usertype: "customer",
+        password: hashedTraderPass,
+        balance: 25000,
+      });
+      console.log("Seeded Trader account (trader@tradex.com / trader123)");
+    } else {
+      const isMatch = await bcrypt.compare("trader123", traderCustomer.password);
+      if (!isMatch) {
+        traderCustomer.password = await bcrypt.hash("trader123", 10);
+        await traderCustomer.save();
+      }
+      if (traderCustomer.balance < 500) {
+        traderCustomer.balance = 25000;
+        await traderCustomer.save();
+      }
+    }
+
+    // 1b. Check or maintain fallback Demo Customer
     let demoCustomer = await User.findOne({ email: "demo@tradex.com" });
     if (!demoCustomer) {
       const hashedPassword = await bcrypt.hash("demo123", 10);
@@ -23,27 +47,31 @@ const seedDemoAccounts = async () => {
       await demoCustomer.save();
     }
 
-    // 2. Check or create Demo Admin
+    // 2. Check or create Admin account
     let demoAdmin = await User.findOne({ email: "admin@tradex.com" });
     if (!demoAdmin) {
       const hashedAdminPassword = await bcrypt.hash("admin123", 10);
       demoAdmin = await User.create({
-        username: "Demo Administrator",
+        username: "Administrator",
         email: "admin@tradex.com",
         usertype: "admin",
         password: hashedAdminPassword,
         balance: 100000,
       });
-      console.log("Seeded Demo Admin account (admin@tradex.com / admin123)");
+      console.log("Seeded Admin account (admin@tradex.com / admin123)");
+    } else if (demoAdmin.username !== "Administrator") {
+      demoAdmin.username = "Administrator";
+      await demoAdmin.save();
     }
 
     // 3. Seed Demo Stocks if customer has no holdings
-    if (demoCustomer) {
-      const existingStocks = await Stock.find({ user: demoCustomer._id });
+    const targetCustomer = traderCustomer || demoCustomer;
+    if (targetCustomer) {
+      const existingStocks = await Stock.find({ user: targetCustomer._id });
       if (existingStocks.length === 0) {
         await Stock.create([
           {
-            user: demoCustomer._id,
+            user: targetCustomer._id,
             symbol: "TATASTEEL",
             name: "Tata Steel Limited",
             price: 158.40,
@@ -52,7 +80,7 @@ const seedDemoAccounts = async () => {
             stockExchange: "NSE",
           },
           {
-            user: demoCustomer._id,
+            user: targetCustomer._id,
             symbol: "DOGE",
             name: "Dogecoin (INR)",
             price: 12.50,
@@ -61,15 +89,15 @@ const seedDemoAccounts = async () => {
             stockExchange: "Crypto",
           },
         ]);
-        console.log("Seeded initial demo stock holdings for demo customer");
+        console.log("Seeded initial stock holdings for customer");
       }
 
       // 4. Seed initial orders if none exist
-      const existingOrders = await Order.find({ user: demoCustomer._id });
+      const existingOrders = await Order.find({ user: targetCustomer._id });
       if (existingOrders.length === 0) {
         await Order.create([
           {
-            user: demoCustomer._id,
+            user: targetCustomer._id,
             symbol: "TATASTEEL",
             name: "Tata Steel Limited",
             stockType: "Equity",
@@ -80,7 +108,7 @@ const seedDemoAccounts = async () => {
             orderStatus: "Completed",
           },
           {
-            user: demoCustomer._id,
+            user: targetCustomer._id,
             symbol: "DOGE",
             name: "Dogecoin (INR)",
             stockType: "Crypto",
@@ -94,10 +122,10 @@ const seedDemoAccounts = async () => {
       }
 
       // 5. Seed initial transaction
-      const existingTx = await Transaction.find({ user: demoCustomer._id });
+      const existingTx = await Transaction.find({ user: targetCustomer._id });
       if (existingTx.length === 0) {
         await Transaction.create({
-          user: demoCustomer._id,
+          user: targetCustomer._id,
           type: "Deposit",
           paymentMode: "UPI",
           amount: 25000,
