@@ -21,16 +21,14 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load high-fidelity equities and cryptocurrencies
     setTrendingStocks(getMarketAssets());
     setLoading(false);
 
-    // Subscribe to synchronized price updates
     const unsubscribe = subscribeMarketUpdates((updated) => {
       setTrendingStocks(updated);
     });
 
-    // Gentle live market ticker simulation (micro-fluctuations strictly under ₹5,000)
+    // Simulated market price movements
     const tickInterval = setInterval(() => {
       setTrendingStocks((prev) => {
         if (!prev || prev.length === 0) return prev;
@@ -39,7 +37,6 @@ const Home = () => {
         const target = copy[randomIdx];
         if (!target) return prev;
 
-        // Micro-jitter: -0.15% to +0.20%
         const jitter = (Math.random() * 0.35 - 0.15) / 100;
         let newPrice = Number((target.basePrice * (1 + jitter)).toFixed(2));
         if (newPrice > 4950) newPrice = 4950;
@@ -83,20 +80,18 @@ const Home = () => {
 
   return (
     <div className="home-page-wrapper">
-      {/* Real-Time Scrolling Ticker Marquee */}
       <TickerTape />
 
       <div className="admin-container">
         <div className="text-center my-4">
           <div className="d-flex justify-content-center align-items-center gap-2 mb-2 flex-wrap">
             <div className="badge-live-stream">
-              <span className="live-dot"></span> Real-Time Equity & Crypto Feed
+              <span className="live-dot"></span> Live Market Feed
             </div>
           </div>
-          <h1 className="fw-bold page-headline">Markets & Digital Assets</h1>
+          <h1 className="fw-bold page-headline">Markets & Assets</h1>
         </div>
 
-        {/* Search Bar */}
         <div className="search-container">
           <BiSearch className="search-icon" />
           <input
@@ -138,10 +133,10 @@ const Home = () => {
         </div>
 
         {loading ? (
-          <div className="loading-spinner">Loading real-time market data...</div>
+          <div className="loading-spinner">Loading market data...</div>
         ) : filteredStocks.length === 0 ? (
           <div className="text-center py-5 text-muted">
-            <p>No securities matching "{search}".</p>
+            <p>No assets matching "{search}".</p>
           </div>
         ) : (
           <div className="trending-stocks-grid">
@@ -155,7 +150,7 @@ const Home = () => {
                   className="trending-stock-card"
                   key={stock.symbol + '-' + index}
                   onClick={() => navigate(`/stock/${stock.symbol}`)}
-                  title={`Open ${stock.symbol} live trading desk`}
+                  title={`View ${stock.symbol}`}
                 >
                   <div className="stock-card-top">
                     <div>
@@ -186,7 +181,6 @@ const Home = () => {
                     </div>
                   </div>
 
-                  {/* Micro Chart Component (Defaults to Line mode) */}
                   <div className="stock-card-chart-area">
                     <MiniCandleChart
                       symbol={stock.symbol}

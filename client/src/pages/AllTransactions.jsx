@@ -3,22 +3,28 @@ import axiosInstance from '../components/axiosInstance';
 import toast from 'react-hot-toast';
 import { BiSearch } from 'react-icons/bi';
 import { FiRefreshCw, FiArrowUpRight, FiArrowDownRight, FiDollarSign, FiActivity } from 'react-icons/fi';
+import { fetchUserRegistry, resolveUserIdentity } from '../utils/userLookup';
 
 const AllTransactions = () => {
   const [transactions, setTransactions] = useState([]);
+  const [userMap, setUserMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
 
   useEffect(() => {
-    fetchTransactions();
+    fetchTransactionsAndUsers();
   }, []);
 
-  const fetchTransactions = async () => {
+  const fetchTransactionsAndUsers = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get('/fetch-transactions');
-      setTransactions((response.data || []).reverse());
+      const [txRes, usersReg] = await Promise.all([
+        axiosInstance.get('/fetch-transactions'),
+        fetchUserRegistry(axiosInstance),
+      ]);
+      setTransactions((txRes.data || []).reverse());
+      setUserMap(usersReg || {});
     } catch (err) {
       console.error('Fetch transactions error:', err);
       toast.error('Failed to load transaction ledger');
@@ -27,7 +33,7 @@ const AllTransactions = () => {
     }
   };
 
-  // Compute Institutional KPIs
+  // Summary stats
   const totalCount = transactions.length;
   const depositsList = transactions.filter((t) => (t.type || '').toLowerCase() === 'deposit');
   const withdrawalsList = transactions.filter(
@@ -41,13 +47,21 @@ const AllTransactions = () => {
   // Filter transactions by search query and type filter
   const filteredTransactions = transactions.filter((t) => {
     const id = String(t._id || '').toLowerCase();
-    const user = String(t.user || '').toLowerCase();
+    const rawUser = String(t.user || '').toLowerCase();
+    const trader = resolveUserIdentity(t.user, userMap);
+    const traderName = trader.username.toLowerCase();
+    const traderEmail = trader.email.toLowerCase();
     const payment = String(t.paymentMode || '').toLowerCase();
     const type = String(t.type || '').toLowerCase();
     const query = search.toLowerCase();
 
     const matchesSearch =
-      id.includes(query) || user.includes(query) || payment.includes(query) || type.includes(query);
+      id.includes(query) ||
+      rawUser.includes(query) ||
+      traderName.includes(query) ||
+      traderEmail.includes(query) ||
+      payment.includes(query) ||
+      type.includes(query);
 
     if (!matchesSearch) return false;
 
@@ -70,42 +84,40 @@ const AllTransactions = () => {
 
   return (
     <div className="page-container">
-      {/* Page Title & Subtitle */}
       <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
           <div className="d-flex align-items-center gap-2 mb-1">
-            <h1 className="page-title mb-0">Platform Financial Ledger</h1>
+            <h1 className="page-title mb-0">Platform Transactions</h1>
             <span className="badge-live-stream">
-              <span className="live-dot"></span> LIVE AUDIT
+              <span className="live-dot"></span> LEDGER AUDIT
             </span>
           </div>
           <p className="page-subtitle mb-0">
-            Real-time surveillance log of customer deposits, cash redemptions, and platform liquidity
+            Overview of user deposits, withdrawals, and platform cash movements
           </p>
         </div>
 
         <button
           type="button"
           className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-          onClick={fetchTransactions}
+          onClick={fetchTransactionsAndUsers}
           disabled={loading}
-          title="Refresh transaction ledger"
+          title="Refresh transactions"
         >
           <FiRefreshCw className={loading ? 'spin-icon' : ''} />
-          <span>Sync Ledger</span>
+          <span>Refresh</span>
         </button>
       </div>
 
-      {/* Institutional KPI Analytics Bar */}
       <div className="admin-kpi-grid">
         <div className="admin-kpi-card">
           <div className="admin-kpi-icon blue">
             <FiActivity />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Ledger Entries</span>
+            <span className="admin-kpi-label">Total Transactions</span>
             <div className="admin-kpi-value">{totalCount}</div>
-            <span className="admin-kpi-sub">Total financial records</span>
+            <span className="admin-kpi-sub">Recorded on platform</span>
           </div>
         </div>
 
@@ -114,11 +126,14 @@ const AllTransactions = () => {
             <FiArrowUpRight />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Gross Deposits</span>
+            <span className="admin-kpi-label">Total Deposits</span>
             <div className="admin-kpi-value text-success">
-              ₹{Number(grossDeposits).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹{Number(grossDeposits).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
-            <span className="admin-kpi-sub">{depositsList.length} Inflow transactions</span>
+            <span className="admin-kpi-sub">{depositsList.length} deposit records</span>
           </div>
         </div>
 
@@ -127,11 +142,14 @@ const AllTransactions = () => {
             <FiArrowDownRight />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Gross Redemptions</span>
+            <span className="admin-kpi-label">Total Withdrawals</span>
             <div className="admin-kpi-value text-danger">
-              ₹{Number(grossWithdrawals).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹{Number(grossWithdrawals).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
-            <span className="admin-kpi-sub">{withdrawalsList.length} Outflow operations</span>
+            <span className="admin-kpi-sub">{withdrawalsList.length} withdrawal records</span>
           </div>
         </div>
 
@@ -140,45 +158,45 @@ const AllTransactions = () => {
             <FiDollarSign />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Net Platform Liquidity</span>
+            <span className="admin-kpi-label">Net Cash Flow</span>
             <div className={`admin-kpi-value ${netLiquidity >= 0 ? 'text-white' : 'text-danger'}`}>
-              ₹{Number(netLiquidity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹{Number(netLiquidity).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
-            <span className="admin-kpi-sub">Inflow minus outflow balance</span>
+            <span className="admin-kpi-sub">Deposits minus withdrawals</span>
           </div>
         </div>
       </div>
 
-      {/* Main Table Card with Search & Filters */}
       <div className="card shadow border-0 rounded-4 overflow-hidden mb-5">
         <div className="card-header py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-          {/* Filter Tabs */}
           <div className="admin-filter-tabs">
             <button
               type="button"
               className={`admin-filter-btn ${typeFilter === 'all' ? 'active' : ''}`}
               onClick={() => setTypeFilter('all')}
             >
-              All Records ({transactions.length})
+              All ({transactions.length})
             </button>
             <button
               type="button"
               className={`admin-filter-btn ${typeFilter === 'deposit' ? 'active' : ''}`}
               onClick={() => setTypeFilter('deposit')}
             >
-              ▲ Deposits ({depositsList.length})
+              Deposits ({depositsList.length})
             </button>
             <button
               type="button"
               className={`admin-filter-btn ${typeFilter === 'withdraw' ? 'active' : ''}`}
               onClick={() => setTypeFilter('withdraw')}
             >
-              ▼ Withdrawals ({withdrawalsList.length})
+              Withdrawals ({withdrawalsList.length})
             </button>
           </div>
 
-          {/* Search Input */}
-          <div className="position-relative" style={{ minWidth: '280px', maxWidth: '380px' }}>
+          <div className="position-relative ms-auto" style={{ minWidth: '280px', maxWidth: '380px' }}>
             <BiSearch
               style={{
                 position: 'absolute',
@@ -199,18 +217,17 @@ const AllTransactions = () => {
                 color: '#ffffff',
                 borderRadius: '0.55rem',
               }}
-              placeholder="Search ID, user, payment rail..."
+              placeholder="Search by ID, user, or payment method..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Table Body / Loading / Empty */}
         {loading ? (
           <div className="p-5 text-center text-muted">
             <div className="spinner-border text-primary mb-3" role="status"></div>
-            <div>Synchronizing institutional ledger...</div>
+            <div>Loading transactions...</div>
           </div>
         ) : filteredTransactions.length === 0 ? (
           <div className="p-5 text-center text-muted">
@@ -234,17 +251,19 @@ const AllTransactions = () => {
               <thead>
                 <tr>
                   <th>Transaction ID</th>
-                  <th>Direction</th>
-                  <th>Settlement Amount</th>
-                  <th>Payment Rail</th>
-                  <th>Account ID</th>
-                  <th>Execution Timestamp</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Payment Mode</th>
+                  <th>User</th>
+                  <th>Date & Time</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTransactions.map((t) => {
                   const isDeposit = (t.type || '').toLowerCase() === 'deposit';
+                  const trader = resolveUserIdentity(t.user, userMap);
+
                   return (
                     <tr key={t._id}>
                       <td>
@@ -266,7 +285,7 @@ const AllTransactions = () => {
                             borderRadius: '6px',
                           }}
                         >
-                          {isDeposit ? '▲ DEPOSIT' : '▼ WITHDRAWAL'}
+                          {isDeposit ? 'Deposit' : 'Withdrawal'}
                         </span>
                       </td>
 
@@ -292,16 +311,23 @@ const AllTransactions = () => {
 
                       <td>
                         <div className="chip-user">
-                          <div className="chip-avatar">
-                            {(t.user || 'U').charAt(0).toUpperCase()}
+                          <div className="chip-avatar">{trader.initial}</div>
+                          <div>
+                            <div className="fw-semibold text-white small">{trader.username}</div>
+                            {trader.email && (
+                              <span
+                                className="text-secondary font-monospace"
+                                style={{ fontSize: '0.72rem' }}
+                                title={`Account ID: ${t.user}`}
+                              >
+                                {trader.email}
+                              </span>
+                            )}
                           </div>
-                          <span className="text-secondary font-monospace small">
-                            {t.user || 'usr_cust_101'}
-                          </span>
                         </div>
                       </td>
 
-                      <td className="text-secondary small">
+                      <td className="text-secondary small font-monospace">
                         {t.time
                           ? new Date(t.time).toLocaleString('en-IN', {
                               day: '2-digit',
@@ -310,7 +336,7 @@ const AllTransactions = () => {
                               hour: '2-digit',
                               minute: '2-digit',
                             })
-                          : 'Recent'}
+                          : 'Settled'}
                       </td>
 
                       <td>
@@ -331,4 +357,3 @@ const AllTransactions = () => {
 };
 
 export default AllTransactions;
-

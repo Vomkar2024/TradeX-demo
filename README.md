@@ -1,14 +1,12 @@
-# TradeX — Institutional Equity Simulation & Portfolio Management Desk
+# TradeX — Virtual Stock Trading & Portfolio Simulator
 
 [![React](https://img.shields.io/badge/Frontend-React%2018-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Express.js](https://img.shields.io/badge/Backend-Express.js%204-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Node.js](https://img.shields.io/badge/Runtime-Node.js%20v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB%20v6+-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Currency](https://img.shields.io/badge/Currency-INR%20(%E2%82%B9)-blue)](https://www.rbi.org.in/)
-[![Dual Mode](https://img.shields.io/badge/Architecture-Dual--Mode%20Simulation-purple)](#-dual-mode-operation)
-[![Docs](https://img.shields.io/badge/Docs-Technical%20Word%20%26%20MD-orange)](#-technical-documentation-library)
 
-TradeX is an institutional-grade stock trading simulation and virtual portfolio management platform. Engineered with a modular 3-tier architecture and strict Model-View-Controller (MVC) separation, TradeX empowers retail traders, students, and financial analysts to experience live financial markets, execute buy/sell orders with weighted-average cost basis accounting, track multi-asset portfolios, and analyze historical performance with zero financial risk.
+TradeX is a full-stack virtual stock trading platform built with the MERN stack (MongoDB, Express, React, Node.js). It provides a realistic trading simulator where users can practice buying and selling Indian equities (NSE/BSE) and cryptocurrencies in real time, track portfolio returns with weighted-average cost accounting, and manage virtual cash balances with zero financial risk.
 
 ---
 
@@ -19,9 +17,9 @@ TradeX is designed around a clean 3-tier architecture separating concerns betwee
 ```mermaid
 graph TB
     subgraph ClientTier ["Presentation Layer (Client)"]
-        UI["React SPA & Vite Desk<br/>• Trading Dashboard<br/>• Real-Time Candlestick Charts<br/>• Portfolio Analytics & Ledger<br/>• Admin Surveillance Console"]
+        UI["React SPA & Vite Desk<br/>• Trading Dashboard<br/>• Real-Time Candlestick Charts<br/>• Portfolio Analytics & Ledger<br/>• Admin Console"]
         AxiosClient["Axios HTTP / Interceptors"]
-        DemoStore["In-Browser High-Fidelity Demo Store<br/>(LocalStorage Fallback)"]
+        DemoStore["In-Browser Local Demo Store<br/>(LocalStorage Fallback)"]
         UI --> AxiosClient
         UI -.-> DemoStore
     end
@@ -64,55 +62,54 @@ graph TB
 
 ---
 
-## ⚡ Dual-Mode Operation
+## ⚡ Operational Modes
 
-TradeX features an industry-leading **Dual-Mode Engine** that ensures 100% operational readiness across all environments:
+TradeX supports two flexible modes of operation:
 
-| Feature | Live Full-Stack MERN Mode | In-Browser High-Fidelity Demo Mode |
+| Feature | Live Full-Stack MERN Mode | Local In-Browser Demo Mode |
 | :--- | :--- | :--- |
-| **Primary Use Case** | Production deployment, multi-user persistence | Zero-setup demonstrations, offline testing, student labs |
-| **Backend Required** | Express.js & Node.js on `localhost:5000` | None (Client runs entirely standalone) |
-| **Database Required** | MongoDB server or MongoDB Atlas | None (Client uses structured reactive LocalStorage) |
+| **Primary Use Case** | Full deployment with multi-user persistence | Instant demonstration, offline testing, student labs |
+| **Backend Required** | Express.js & Node.js on `localhost:5000` | None (Client runs standalone) |
+| **Database Required** | MongoDB server or MongoDB Atlas | None (Client uses LocalStorage) |
 | **Starting Capital** | Configurable per user (`₹500` default registered) | `₹25,000` (Customer) / `₹100,000` (Admin) |
-| **Execution Speed** | Real HTTP roundtrip with database indexing | Sub-millisecond instant in-memory execution |
-| **Reset Capability** | Database re-seeding script | One-click **"Reset Demo"** button in Navbar dropdown |
+| **Execution Speed** | HTTP requests with database persistence | Instant local execution |
+| **Reset Capability** | Database re-seeding script | One-click **"Reset Demo"** in user menu |
 
-> [!TIP]
-> If MongoDB is temporarily offline or disconnected, the TradeX frontend automatically alerts the user and smoothly routes operations through the high-fidelity demo store without crashing or freezing.
+> **Note:** If MongoDB is offline or disconnected, TradeX falls back to local storage so you can continue testing the UI and simulated trading without disruption.
 
 ---
 
 ## 🌟 Core Platform Features
 
-### 1. 📈 Real-Time Multi-Asset Market Feeds & Dynamic Price Engine
-- Live asset pricing modeled in **Indian Rupees (₹ INR)** with realistic price discovery and stochastic volatility dynamics.
-- Comprehensive market universe featuring NSE/BSE blue-chip equities (`TATASTEEL`, `INFY`, `RELIANCE`, `ITC`, `HDFCBANK`) and liquid crypto assets (`DOGE`, `XRP`, `ADA`).
-- Continuous price oscillation simulating live order book depth, liquidity spreads, and realistic bid-ask movements for an authentic market simulation experience.
+### 1. 📈 Real-Time Market Feed & Price Simulation
+- Live asset pricing modeled in **Indian Rupees (₹ INR)** with realistic price movements.
+- Comprehensive market universe featuring NSE/BSE equities (`TATASTEEL`, `INFY`, `RELIANCE`, `ITC`, `HDFCBANK`) and liquid crypto assets (`DOGE`, `XRP`, `ADA`).
+- Continuous price updates simulating active market activity.
 
 ### 2. 📊 Interactive Candlestick & Area Charts
 - Live interactive charts with multi-timeframe views (`1D`, `1W`, `1M`, `1Y`).
 - Real-time high, low, open, close, and volume display.
 - Dynamic color-coding for bullish (green) and bearish (red) trends.
 
-### 3. 🎯 Institutional Weighted-Average Cost Basis Accounting
-- When multiple lots of an equity are purchased at fluctuating prices, TradeX automatically computes the exact weighted-average unit cost:
+### 3. 🎯 Weighted-Average Cost Basis Accounting
+- When multiple lots of an equity are purchased at fluctuating prices, TradeX computes the exact weighted-average unit cost:
   $$\text{New Average Price} = \frac{(\text{Current Holdings} \times \text{Average Cost}) + (\text{New Units} \times \text{Execution Price})}{\text{Total Units}}$$
-- Prevents price distortion and accurately computes realized and unrealized profit and loss (P&L).
+- Accurately tracks realized and unrealized profit and loss (P&L).
 
 ### 4. 💼 Virtual Portfolio & P&L Analytics
 - Detailed breakdown of all active stock and crypto holdings.
 - Real-time calculation of Current Value, Investment Cost, Total Return, and Unrealized P&L percentage.
-- Single-click liquidation and rebalancing controls.
+- Single-click buy and sell controls.
 
 ### 5. 💳 Cash Wallet & Transaction Ledger
-- Instant simulated cash deposits and withdrawals via simulated UPI / Net Banking.
-- Real-time balance updates across all open views without requiring page reloads.
-- Double-entry transaction logging preserving full financial audit trails.
+- Simulated cash deposits and withdrawals via mock UPI and Net Banking.
+- Real-time balance updates across views without requiring full page reloads.
+- Full ledger tracking for financial history.
 
-### 6. 🛡️ Admin Market Surveillance
-- Platform-wide equity pool monitoring displaying total circulating shares, platform valuation, and holder distribution.
-- Complete visibility into all registered user accounts and cumulative order books.
-- Ability to audit transactions and investigate irregular activity.
+### 6. 🛡️ Admin Management & Overview
+- Platform-wide equity monitoring displaying total shares held, platform valuation, and holder distribution.
+- Complete visibility into registered user accounts and order logs.
+- Ability to audit transactions and investigate orders.
 
 ### 7. 🔐 6-Digit OTP Password Recovery
 - Integrated Two-Phase Password Reset workflow:
@@ -123,7 +120,7 @@ TradeX features an industry-leading **Dual-Mode Engine** that ensures 100% opera
 
 ## 📚 Technical Documentation Library
 
-TradeX provides a complete suite of executive technical documentation available in both GitHub Markdown (`.md`) format and professionally formatted Microsoft Word (`.docx`) files:
+TradeX provides technical documentation available in both GitHub Markdown (`.md`) format and Microsoft Word (`.docx`) files:
 
 | Specification Document | Markdown Version | Formatted Word Document (.docx) | Summary |
 | :--- | :--- | :--- | :--- |
@@ -133,8 +130,7 @@ TradeX provides a complete suite of executive technical documentation available 
 | **MVC Pattern & Data Flow** | [`MVC_PATTERN.md`](docs/MVC_PATTERN.md) | [`MVC_PATTERN.docx`](docs/MVC_PATTERN.docx) | Model-View-Controller responsibilities, request lifecycle, controller patterns |
 | **End-to-End User Flow Guide** | [`USER_FLOW.md`](docs/USER_FLOW.md) | [`USER_FLOW.docx`](docs/USER_FLOW.docx) | 9-step customer and admin journey from onboarding to execution |
 
-> [!NOTE]
-> All Word documents (`.docx`) include embedded high-resolution diagrams, custom-styled executive tables, color-coded callout blocks, and syntax-highlighted code containers generated via `python-docx`.
+> **Note:** All Word documents (`.docx`) include formatted tables, code containers, and diagrams generated via `python-docx`.
 
 ---
 
@@ -260,4 +256,4 @@ curl http://localhost:5000/api/health
 ---
 
 ## 📄 License
-This project is licensed under the ME License. Built for educational and institutional financial simulations.
+This project is licensed under the MIT License. Built for educational purposes as a full-stack web development project.

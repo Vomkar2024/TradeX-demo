@@ -1,5 +1,4 @@
-// TradeX Centralized Market Pricing Engine
-// Standardizes all Stock and Crypto pricing realistically and strictly under ₹5,000.
+// Mock market data and pricing helpers for stocks and crypto
 
 export const DEFAULT_MARKET_ASSETS = [
   // Top Featured
@@ -37,15 +36,15 @@ export const DEFAULT_MARKET_ASSETS = [
     priceRange: [85, 93],
   },
   {
-    symbol: 'HASMSTER',
-    shortName: 'Hamster Kombat (HMSTR)',
-    basePrice: 2.85,
-    regularMarketOpen: 2.85,
-    regularMarketChangePercent: 8.45,
-    change: 0.22,
+    symbol: 'ADA',
+    shortName: 'Cardano (ADA)',
+    basePrice: 42.50,
+    regularMarketOpen: 42.50,
+    regularMarketChangePercent: 3.25,
+    change: 1.34,
     category: 'Crypto',
     exchange: 'Crypto',
-    priceRange: [0.5, 9.5],
+    priceRange: [25, 75],
   },
 
   // Equities (NSE/BSE) - All realistic under ₹5,000
@@ -218,8 +217,20 @@ export const getMarketAssets = () => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Enforce under 5000 check on all loaded items
         return parsed.map((item) => {
+          if (item.symbol === 'HASMSTER') {
+            return {
+              symbol: 'ADA',
+              shortName: 'Cardano (ADA)',
+              basePrice: 42.50,
+              regularMarketOpen: 42.50,
+              regularMarketChangePercent: 3.25,
+              change: 1.34,
+              category: 'Crypto',
+              exchange: 'Crypto',
+              priceRange: [25, 75],
+            };
+          }
           const price = Number(item.basePrice || item.regularMarketOpen || 100);
           const safePrice = price > 5000 ? (price % 4000) + 500 : price;
           return {
@@ -236,9 +247,7 @@ export const getMarketAssets = () => {
   return DEFAULT_MARKET_ASSETS;
 };
 
-/**
- * Save market assets to localStorage and broadcast an update event.
- */
+// Save market assets to localStorage and notify listeners
 export const saveMarketAssets = (assets) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(assets));
@@ -248,19 +257,14 @@ export const saveMarketAssets = (assets) => {
   }
 };
 
-/**
- * Generate a random number between min and max rounded to 2 decimal places.
- * Ensures the value is strictly under 5000.
- */
+// Generate a random price between min and max
 export const getRandomPrice = (min = 10, max = 4950) => {
   const safeMax = Math.min(max, 4995);
   const val = Math.random() * (safeMax - min) + min;
   return Number(val.toFixed(2));
 };
 
-/**
- * Re-rolls all stock and crypto prices to fresh randomized values strictly under ₹5,000.
- */
+// Randomize market prices for testing
 export const randomizeAllMarketPrices = () => {
   const current = getMarketAssets();
   const randomized = current.map((asset) => {
@@ -283,17 +287,13 @@ export const randomizeAllMarketPrices = () => {
   return randomized;
 };
 
-/**
- * Reset all market prices to realistic predefined baseline prices under ₹5,000.
- */
+// Reset market prices to initial list
 export const resetMarketPrices = () => {
   saveMarketAssets(DEFAULT_MARKET_ASSETS);
   return DEFAULT_MARKET_ASSETS;
 };
 
-/**
- * Look up asset details by symbol with fallback guaranteed to be under ₹5,000.
- */
+// Look up asset details by symbol
 export const getAssetBySymbol = (symbol) => {
   if (!symbol) return DEFAULT_MARKET_ASSETS[0];
   const upper = symbol.toUpperCase();
@@ -301,13 +301,13 @@ export const getAssetBySymbol = (symbol) => {
   const found = assets.find((a) => a.symbol === upper);
   if (found) return found;
 
-  // Unlisted symbol fallback: deterministic realistic price under 5,000
+  // Fallback for unlisted symbols
   let hash = 0;
   for (let i = 0; i < upper.length; i++) {
     hash = (hash << 5) - hash + upper.charCodeAt(i);
     hash |= 0;
   }
-  const fallbackPrice = Number(((Math.abs(hash) % 4500) + 120).toFixed(2)); // ₹120 to ₹4,620
+  const fallbackPrice = Number(((Math.abs(hash) % 4500) + 120).toFixed(2));
 
   return {
     symbol: upper,
@@ -323,9 +323,7 @@ export const getAssetBySymbol = (symbol) => {
   };
 };
 
-/**
- * Return an object dictionary keyed by symbol for fast lookups & registry views.
- */
+// Stock registry keyed by symbol
 export const getStockRegistry = () => {
   const assets = getMarketAssets();
   const registry = {};
@@ -343,9 +341,7 @@ export const getStockRegistry = () => {
   return registry;
 };
 
-/**
- * Subscribe to market price changes across the application.
- */
+// Subscribe to market price changes
 export const subscribeMarketUpdates = (callback) => {
   const handler = (e) => {
     if (e.detail) {
@@ -356,9 +352,7 @@ export const subscribeMarketUpdates = (callback) => {
   return () => window.removeEventListener('marketPricesUpdated', handler);
 };
 
-/**
- * Format currency into standard Indian Rupee format.
- */
+// Format currency into INR format
 export const formatINR = (value) => {
   return Number(value || 0).toLocaleString('en-IN', {
     minimumFractionDigits: 2,

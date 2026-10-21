@@ -3,22 +3,28 @@ import axiosInstance from '../components/axiosInstance';
 import toast from 'react-hot-toast';
 import { BiSearch } from 'react-icons/bi';
 import { FiRefreshCw, FiTrendingUp, FiArrowUpRight, FiArrowDownRight, FiCheckCircle } from 'react-icons/fi';
+import { fetchUserRegistry, resolveUserIdentity } from '../utils/userLookup';
 
 const AllOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [userMap, setUserMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sideFilter, setSideFilter] = useState('all');
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrdersAndUsers();
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrdersAndUsers = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get('/fetch-orders');
-      setOrders((response.data || []).reverse());
+      const [ordersRes, usersReg] = await Promise.all([
+        axiosInstance.get('/fetch-orders'),
+        fetchUserRegistry(axiosInstance),
+      ]);
+      setOrders((ordersRes.data || []).reverse());
+      setUserMap(usersReg || {});
     } catch (err) {
       console.error('Fetch orders error:', err);
       toast.error('Failed to load orders audit log');
@@ -27,7 +33,6 @@ const AllOrders = () => {
     }
   };
 
-  // Compute Order KPIs
   const totalOrders = orders.length;
   const buyOrders = orders.filter((o) => (o.orderType || '').toLowerCase() === 'buy');
   const sellOrders = orders.filter((o) => (o.orderType || '').toLowerCase() === 'sell');
@@ -36,11 +41,18 @@ const AllOrders = () => {
   const filteredOrders = orders.filter((o) => {
     const symbol = String(o.symbol || '').toLowerCase();
     const name = String(o.name || '').toLowerCase();
-    const user = String(o.user || '').toLowerCase();
+    const rawUser = String(o.user || '').toLowerCase();
+    const trader = resolveUserIdentity(o.user, userMap);
+    const traderName = trader.username.toLowerCase();
+    const traderEmail = trader.email.toLowerCase();
     const query = search.toLowerCase();
 
     const matchesSearch =
-      symbol.includes(query) || name.includes(query) || user.includes(query);
+      symbol.includes(query) ||
+      name.includes(query) ||
+      rawUser.includes(query) ||
+      traderName.includes(query) ||
+      traderEmail.includes(query);
 
     if (!matchesSearch) return false;
 
@@ -55,40 +67,38 @@ const AllOrders = () => {
 
   return (
     <div className="page-container">
-      {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
           <div className="d-flex align-items-center gap-2 mb-1">
-            <h1 className="page-title mb-0">Platform Orders Audit</h1>
+            <h1 className="page-title mb-0">Platform Orders</h1>
             <span className="badge-live-stream">
-              <span className="live-dot"></span> SURVEILLANCE LOG
+              <span className="live-dot"></span> AUDIT LOG
             </span>
           </div>
           <p className="page-subtitle mb-0">
-            Real-time surveillance log of all trade executions and market liquidity fills across the platform
+            History of all orders and trade executions across user accounts
           </p>
         </div>
 
         <button
           type="button"
           className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-          onClick={fetchOrders}
+          onClick={fetchOrdersAndUsers}
           disabled={loading}
-          title="Refresh orders audit"
+          title="Refresh orders"
         >
           <FiRefreshCw className={loading ? 'spin-icon' : ''} />
-          <span>Sync Orders</span>
+          <span>Refresh</span>
         </button>
       </div>
 
-      {/* KPI Stats Bar */}
       <div className="admin-kpi-grid">
         <div className="admin-kpi-card">
           <div className="admin-kpi-icon blue">
             <FiTrendingUp />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Total Executions</span>
+            <span className="admin-kpi-label">Total Orders</span>
             <div className="admin-kpi-value">{totalOrders}</div>
             <span className="admin-kpi-sub">All platform trade orders</span>
           </div>
@@ -127,24 +137,25 @@ const AllOrders = () => {
           <div className="admin-kpi-info">
             <span className="admin-kpi-label">Gross Turnover</span>
             <div className="admin-kpi-value text-white">
-              ₹{Number(grossTurnover).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹{Number(grossTurnover).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
-            <span className="admin-kpi-sub">Cumulative order gross value</span>
+            <span className="admin-kpi-sub">Total value of all orders</span>
           </div>
         </div>
       </div>
 
-      {/* Orders Table Container */}
       <div className="card shadow border-0 rounded-4 overflow-hidden mb-5">
         <div className="card-header py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-          {/* Side Filter Tabs */}
           <div className="admin-filter-tabs">
             <button
               type="button"
               className={`admin-filter-btn ${sideFilter === 'all' ? 'active' : ''}`}
               onClick={() => setSideFilter('all')}
             >
-              All Executions ({orders.length})
+              All Orders ({orders.length})
             </button>
             <button
               type="button"
@@ -162,8 +173,7 @@ const AllOrders = () => {
             </button>
           </div>
 
-          {/* Search Input */}
-          <div className="position-relative" style={{ minWidth: '280px', maxWidth: '380px' }}>
+          <div className="position-relative ms-auto" style={{ minWidth: '280px', maxWidth: '380px' }}>
             <BiSearch
               style={{
                 position: 'absolute',
@@ -194,11 +204,11 @@ const AllOrders = () => {
         {loading ? (
           <div className="p-5 text-center text-muted">
             <div className="spinner-border text-primary mb-3" role="status"></div>
-            <div>Auditing platform order log...</div>
+            <div>Loading orders...</div>
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="p-5 text-center text-muted">
-            <p className="mb-2">No trade orders match your search criteria.</p>
+            <p className="mb-2">No orders match your search criteria.</p>
             {(search || sideFilter !== 'all') && (
               <button
                 type="button"
@@ -217,19 +227,22 @@ const AllOrders = () => {
             <table className="custom-table mb-0">
               <thead>
                 <tr>
-                  <th>Order Side</th>
-                  <th>Security</th>
-                  <th>Asset Name</th>
-                  <th>Shares Quantity</th>
-                  <th>Fill Price</th>
-                  <th>Gross Value</th>
-                  <th>Settlement</th>
-                  <th>Trader Account</th>
+                  <th>Type</th>
+                  <th>Symbol</th>
+                  <th>Name</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Total</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Trader</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map((order) => {
                   const isBuy = (order.orderType || '').toLowerCase() === 'buy';
+                  const trader = resolveUserIdentity(order.user, userMap);
+
                   return (
                     <tr key={order._id}>
                       <td>
@@ -238,7 +251,9 @@ const AllOrders = () => {
                           style={{
                             backgroundColor: isBuy ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
                             color: isBuy ? '#34d399' : '#fb7185',
-                            border: `1px solid ${isBuy ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)'}`,
+                            border: `1px solid ${
+                              isBuy ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)'
+                            }`,
                             padding: '0.35rem 0.65rem',
                             borderRadius: '6px',
                           }}
@@ -265,6 +280,18 @@ const AllOrders = () => {
                         })}
                       </td>
 
+                      <td className="text-secondary small font-monospace">
+                        {order.date
+                          ? new Date(order.date).toLocaleString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          : 'Settled'}
+                      </td>
+
                       <td>
                         <span className="badge-status-settled">
                           ● {order.orderStatus || 'Completed'}
@@ -273,12 +300,19 @@ const AllOrders = () => {
 
                       <td>
                         <div className="chip-user">
-                          <div className="chip-avatar">
-                            {(order.user || 'T').charAt(0).toUpperCase()}
+                          <div className="chip-avatar">{trader.initial}</div>
+                          <div>
+                            <div className="fw-semibold text-white small">{trader.username}</div>
+                            {trader.email && (
+                              <span
+                                className="text-secondary font-monospace"
+                                style={{ fontSize: '0.72rem' }}
+                                title={`Account ID: ${order.user}`}
+                              >
+                                {trader.email}
+                              </span>
+                            )}
                           </div>
-                          <span className="text-secondary font-monospace small">
-                            {order.user || 'usr_cust_101'}
-                          </span>
                         </div>
                       </td>
                     </tr>

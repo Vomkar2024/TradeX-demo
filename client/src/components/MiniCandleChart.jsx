@@ -1,10 +1,5 @@
 import React, { useMemo } from 'react';
 
-/**
- * MiniCandleChart renders a compact SVG chart
- * Supports 'line' (default) and 'candle' modes.
- * Perfect for stock cards, surveillance tables, and overview lists.
- */
 const MiniCandleChart = ({
   symbol = 'RELIANCE',
   price = 2945,
@@ -25,7 +20,6 @@ const MiniCandleChart = ({
     const count = type === 'candle' ? 9 : 16;
     const result = [];
 
-    // Deterministic pseudo-random seed from symbol
     let seed = symbol.split('').reduce((acc, c) => acc + c.charCodeAt(0), 42);
     const pseudoRandom = () => {
       seed = (seed * 9301 + 49297) % 233280;
@@ -156,7 +150,6 @@ const MiniCandleChart = ({
 
         return (
           <g key={idx} className="candle-bar">
-            {/* Wick */}
             <line
               x1={cx}
               y1={yHigh}
@@ -167,7 +160,6 @@ const MiniCandleChart = ({
               strokeLinecap="round"
               opacity="0.85"
             />
-            {/* Candle body */}
             <rect
               x={cx - barWidth / 2}
               y={topBody}

@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { GeneralContext } from '../context/GeneralContext';
 
 const Navbar = () => {
@@ -43,19 +43,19 @@ const Navbar = () => {
 
         {userType === 'customer' && (
           <ul className="navbar-links">
-            <li><Link to="/home">Home</Link></li>
-            <li><Link to="/portfolio">Portfolio</Link></li>
-            <li><Link to="/history">History</Link></li>
-            <li><Link to="/profile">Profile</Link></li>
+            <li><NavLink to="/home" className={({ isActive }) => isActive ? 'active' : ''}>Home</NavLink></li>
+            <li><NavLink to="/portfolio" className={({ isActive }) => isActive ? 'active' : ''}>Portfolio</NavLink></li>
+            <li><NavLink to="/history" className={({ isActive }) => isActive ? 'active' : ''}>History</NavLink></li>
+            <li><NavLink to="/profile" className={({ isActive }) => isActive ? 'active' : ''}>Profile</NavLink></li>
           </ul>
         )}
 
         {userType === 'admin' && (
           <ul className="navbar-links">
-            <li><Link to="/admin">Dashboard</Link></li>
-            <li><Link to="/users">Users</Link></li>
-            <li><Link to="/all-orders">All Orders</Link></li>
-            <li><Link to="/all-transactions">All Transactions</Link></li>
+            <li><NavLink to="/admin" className={({ isActive }) => isActive ? 'active' : ''}>Dashboard</NavLink></li>
+            <li><NavLink to="/users" className={({ isActive }) => isActive ? 'active' : ''}>Users</NavLink></li>
+            <li><NavLink to="/all-orders" className={({ isActive }) => isActive ? 'active' : ''}>All Orders</NavLink></li>
+            <li><NavLink to="/all-transactions" className={({ isActive }) => isActive ? 'active' : ''}>All Transactions</NavLink></li>
           </ul>
         )}
       </div>
@@ -89,10 +89,10 @@ const Navbar = () => {
                     <div className="dropdown-username">{username}</div>
                     <div className="dropdown-role">
                       {userType === 'admin'
-                        ? 'System Administrator'
+                        ? 'Administrator'
                         : isDemo
-                        ? '⚡ Simulated Demo Account'
-                        : 'Live Trader Account'}
+                        ? '⚡ Demo Account'
+                        : 'Trader Account'}
                     </div>
                   </div>
                   <div className="user-dropdown-divider"></div>
@@ -104,7 +104,7 @@ const Navbar = () => {
                         setDropdownOpen(false);
                         resetDemoData();
                       }}
-                      title="Reset demo capital to ₹25,000 and restore initial portfolio"
+                      title="Reset demo balance and holdings"
                     >
                       <span className="dropdown-icon">🔄</span>
                       <span>Reset Demo</span>
@@ -130,7 +130,7 @@ const Navbar = () => {
             <button
               className="btn-try-demo-nav"
               onClick={() => loginDemo('customer')}
-              title="Launch instant simulated trading desk"
+              title="Try Demo Mode"
             >
               <span className="demo-nav-icon">⚡</span>
               <span>Try Demo Mode</span>
@@ -143,5 +143,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-

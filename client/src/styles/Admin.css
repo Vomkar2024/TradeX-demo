@@ -317,6 +317,22 @@
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
+/* Expanded User Directory Page Layout */
+.admin-user-directory-container {
+  max-width: 1560px !important;
+  width: 95% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+@media (min-width: 1600px) {
+  .admin-user-directory-container {
+    max-width: 1680px !important;
+    width: 96% !important;
+  }
+}
+
+
 
 
 

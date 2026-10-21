@@ -60,7 +60,7 @@ export const GeneralContextProvider = ({ children }) => {
       navigate("/admin");
     } else {
       toast.success(
-        `Welcome to Demo Mode (${user.username})! ₹${Number(user.balance).toLocaleString('en-IN')} virtual funds ready.`
+        `Welcome (${user.username})! Starting balance: ₹${Number(user.balance).toLocaleString('en-IN')}`
       );
       navigate("/home");
     }
@@ -69,7 +69,7 @@ export const GeneralContextProvider = ({ children }) => {
   const resetDemoData = () => {
     const user = demoStore.resetDemo();
     updateBalance(user.balance);
-    toast.success("Demo portfolio, transactions, and balance reset!");
+    toast.success("Demo account reset to initial values.");
     window.location.reload();
   };
 
@@ -103,9 +103,9 @@ export const GeneralContextProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Login failed:", err);
-      // Graceful offline fallback only if explicitly using demo@tradex.com and server is down
+      // Fallback if demo user and server is offline
       if (email.trim().toLowerCase() === "demo@tradex.com" && (!err.response || err.code === "ERR_NETWORK")) {
-        toast("Backend offline, launching simulated demo mode...", { icon: "⚡" });
+        toast("Backend unreachable, switching to offline demo mode...", { icon: "⚡" });
         loginDemo("customer");
         return;
       }

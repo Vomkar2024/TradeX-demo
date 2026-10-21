@@ -32,7 +32,7 @@ const TickerTape = ({ tickers: propTickers }) => {
     return subscribeMarketUpdates(update);
   }, [propTickers]);
 
-  // Duplicate for smooth seamless loop
+  // Duplicate items for continuous scrolling loop
   const displayItems = [...liveTickers, ...liveTickers];
 
   return (
@@ -59,4 +59,3 @@ const TickerTape = ({ tickers: propTickers }) => {
 };
 
 export default React.memo(TickerTape);
-

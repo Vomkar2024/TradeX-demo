@@ -26,7 +26,6 @@ const Portfolio = () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get('/fetch-stocks');
-      // Filter stocks for current user
       const userHoldings = (res.data || []).filter((s) => s.user === userId);
       setStocks(userHoldings);
     } catch (err) {
@@ -186,7 +185,7 @@ const Portfolio = () => {
           <div className="p-5 text-center">
             <p className="text-secondary mb-3">You do not have any holdings in your portfolio yet.</p>
             <button className="btn-portfolio-explore" onClick={() => navigate('/home')}>
-              Explore Trending Securities
+              Explore Assets
             </button>
           </div>
         ) : (
@@ -194,11 +193,11 @@ const Portfolio = () => {
             <table className="custom-table mb-0">
               <thead>
                 <tr>
-                  <th>Security</th>
+                  <th>Asset</th>
                   <th>Name</th>
                   <th>Quantity</th>
                   <th>Avg Unit Price</th>
-                  <th>Total Position Value</th>
+                  <th>Total Value</th>
                   <th className="portfolio-actions-cell">Actions</th>
                 </tr>
               </thead>
@@ -266,7 +265,6 @@ const Portfolio = () => {
         )}
       </div>
 
-      {/* Sell Modal */}
       {sellModalStock && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
@@ -413,7 +411,7 @@ const Portfolio = () => {
                       className="btn btn-link btn-sm text-decoration-none text-info p-0"
                       onClick={() => navigate(`/stock/${buyModalStock.symbol}`)}
                     >
-                      Open Live Interactive Trading Desk →
+                      View Full Chart →
                     </button>
                   </div>
                 </div>

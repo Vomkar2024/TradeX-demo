@@ -7,7 +7,7 @@ const fetchTransactions = async (req, res) => {
         res.json(transactions);
     } catch (err) {
         console.error("Fetch transactions error:", err);
-        res.status(500).json({ message: "An error occurred while retrieving platform transactions." });
+        res.status(500).json({ message: "Failed to fetch transactions" });
     }
 };
 
@@ -16,12 +16,12 @@ const newTransaction = async (req, res) => {
     try {
         const numAmount = Number(amount);
         if (isNaN(numAmount) || numAmount <= 0) {
-            return res.status(400).json({ message: "Transaction amount must be a positive number." });
+            return res.status(400).json({ message: "Amount must be greater than zero" });
         }
 
         const userData = await User.findById(user);
         if (!userData) {
-            return res.status(404).json({ message: "User account not found." });
+            return res.status(404).json({ message: "User not found" });
         }
 
         const normalizedType = type?.toLowerCase();
@@ -32,7 +32,7 @@ const newTransaction = async (req, res) => {
         } else if (normalizedType === "withdraw") {
             if (currentBalance < numAmount) {
                 return res.status(400).json({ 
-                    message: `Insufficient balance (₹${currentBalance.toFixed(2)}) for withdrawal of ₹${numAmount.toFixed(2)}.` 
+                    message: `Insufficient balance. Available: ₹${currentBalance.toFixed(2)}` 
                 });
             }
             userData.balance = Number((currentBalance - numAmount).toFixed(2));
@@ -54,7 +54,7 @@ const newTransaction = async (req, res) => {
         });
     } catch (err) {
         console.error("New transaction error:", err);
-        return res.status(500).json({ message: "An unexpected error occurred while processing the transaction." });
+        res.status(500).json({ message: "Failed to process transaction" });
     }
 };
 

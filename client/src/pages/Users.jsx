@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axiosInstance from '../components/axiosInstance';
 import toast from 'react-hot-toast';
 import { BiSearch } from 'react-icons/bi';
@@ -6,31 +6,45 @@ import { FiRefreshCw, FiUsers, FiUserCheck, FiShield, FiDollarSign } from 'react
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
   useEffect(() => {
-    fetchUsers();
+    fetchData();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get('/fetch-users');
-      setUsers(res.data || []);
+      const [usersRes, stocksRes] = await Promise.all([
+        axiosInstance.get('/fetch-users'),
+        axiosInstance.get('/fetch-stocks').catch(() => ({ data: [] })),
+      ]);
+      setUsers(usersRes.data || []);
+      setStocks(stocksRes.data || []);
     } catch (err) {
       console.error('Fetch users error:', err);
-      toast.error('Failed to load users');
+      toast.error('Failed to load users directory');
     } finally {
       setLoading(false);
     }
   };
 
-  // Compute User KPIs
+  const isTraderRole = (role) => {
+    const r = (role || '').toLowerCase();
+    return r === 'customer' || r === 'trader';
+  };
+
+  const isAdminRole = (role) => {
+    return (role || '').toLowerCase() === 'admin';
+  };
+
+  // Stats
   const totalAccounts = users.length;
-  const customersList = users.filter((u) => (u.usertype || '').toLowerCase() === 'customer');
-  const adminsList = users.filter((u) => (u.usertype || '').toLowerCase() === 'admin');
+  const tradersList = users.filter((u) => isTraderRole(u.usertype));
+  const adminsList = users.filter((u) => isAdminRole(u.usertype));
   const totalPlatformBalance = users.reduce((acc, u) => acc + Number(u.balance || 0), 0);
 
   const filteredUsers = users.filter((u) => {
@@ -43,52 +57,61 @@ const Users = () => {
     if (!matchesSearch) return false;
 
     if (roleFilter === 'customer') {
-      return role === 'customer';
+      return isTraderRole(role);
     }
     if (roleFilter === 'admin') {
-      return role === 'admin';
+      return isAdminRole(role);
     }
     return true;
   });
 
+  // Pin Administrator to the top of the table
+  const sortedUsers = useMemo(() => {
+    return [...filteredUsers].sort((a, b) => {
+      const aAdmin = isAdminRole(a.usertype);
+      const bAdmin = isAdminRole(b.usertype);
+      if (aAdmin && !bAdmin) return -1;
+      if (!aAdmin && bAdmin) return 1;
+      return 0;
+    });
+  }, [filteredUsers]);
+
   return (
-    <div className="page-container">
-      {/* Page Header */}
+    <div className="page-container admin-user-directory-container">
       <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
           <div className="d-flex align-items-center gap-2 mb-1">
-            <h1 className="page-title mb-0">Platform User Directory</h1>
+            <h1 className="page-title mb-0">Users Directory</h1>
             <span className="badge-live-stream">
-              <span className="live-dot"></span> DIRECTORY ACCESS
+              <span className="live-dot"></span> ACCOUNTS
             </span>
           </div>
           <p className="page-subtitle mb-0">
-            Institutional directory of all registered traders, portfolio customers, and security administrators
+            Overview of registered traders and administrator accounts
           </p>
         </div>
 
         <button
           type="button"
           className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-          onClick={fetchUsers}
+          onClick={fetchData}
           disabled={loading}
-          title="Refresh platform accounts"
+          title="Refresh users"
         >
           <FiRefreshCw className={loading ? 'spin-icon' : ''} />
-          <span>Sync Directory</span>
+          <span>Refresh</span>
         </button>
       </div>
 
-      {/* KPI Stats Bar */}
       <div className="admin-kpi-grid">
         <div className="admin-kpi-card">
           <div className="admin-kpi-icon blue">
             <FiUsers />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Total Accounts</span>
+            <span className="admin-kpi-label">Total Users</span>
             <div className="admin-kpi-value">{totalAccounts}</div>
-            <span className="admin-kpi-sub">Registered platform identities</span>
+            <span className="admin-kpi-sub">Registered accounts</span>
           </div>
         </div>
 
@@ -97,9 +120,9 @@ const Users = () => {
             <FiUserCheck />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Active Traders</span>
-            <div className="admin-kpi-value text-success">{customersList.length}</div>
-            <span className="admin-kpi-sub">Retail & high-net-worth users</span>
+            <span className="admin-kpi-label">Traders</span>
+            <div className="admin-kpi-value text-success">{tradersList.length}</div>
+            <span className="admin-kpi-sub">Standard user accounts</span>
           </div>
         </div>
 
@@ -108,9 +131,9 @@ const Users = () => {
             <FiShield />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Administrators</span>
+            <span className="admin-kpi-label">Admins</span>
             <div className="admin-kpi-value text-danger">{adminsList.length}</div>
-            <span className="admin-kpi-sub">System surveillance officers</span>
+            <span className="admin-kpi-sub">Admin accounts</span>
           </div>
         </div>
 
@@ -119,19 +142,20 @@ const Users = () => {
             <FiDollarSign />
           </div>
           <div className="admin-kpi-info">
-            <span className="admin-kpi-label">Cumulative Capital</span>
+            <span className="admin-kpi-label">Total Wallet Balance</span>
             <div className="admin-kpi-value text-white">
-              ₹{Number(totalPlatformBalance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹{Number(totalPlatformBalance).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
-            <span className="admin-kpi-sub">Total user wallets on deposit</span>
+            <span className="admin-kpi-sub">Total balance across users</span>
           </div>
         </div>
       </div>
 
-      {/* Users Table Container */}
       <div className="card shadow border-0 rounded-4 overflow-hidden mb-5">
         <div className="card-header py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-          {/* Role Filter Tabs */}
           <div className="admin-filter-tabs">
             <button
               type="button"
@@ -145,19 +169,18 @@ const Users = () => {
               className={`admin-filter-btn ${roleFilter === 'customer' ? 'active' : ''}`}
               onClick={() => setRoleFilter('customer')}
             >
-              👤 Traders ({customersList.length})
+              Traders ({tradersList.length})
             </button>
             <button
               type="button"
               className={`admin-filter-btn ${roleFilter === 'admin' ? 'active' : ''}`}
               onClick={() => setRoleFilter('admin')}
             >
-              🛡️ Admins ({adminsList.length})
+              Admins ({adminsList.length})
             </button>
           </div>
 
-          {/* Search Input */}
-          <div className="position-relative" style={{ minWidth: '280px', maxWidth: '380px' }}>
+          <div className="position-relative ms-auto" style={{ minWidth: '280px', maxWidth: '380px' }}>
             <BiSearch
               style={{
                 position: 'absolute',
@@ -188,7 +211,7 @@ const Users = () => {
         {loading ? (
           <div className="p-5 text-center text-muted">
             <div className="spinner-border text-primary mb-3" role="status"></div>
-            <div>Loading user accounts directory...</div>
+            <div>Loading users...</div>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="p-5 text-center text-muted">
@@ -211,19 +234,23 @@ const Users = () => {
             <table className="custom-table mb-0">
               <thead>
                 <tr>
-                  <th>User Identity</th>
-                  <th>Email Address</th>
-                  <th>Permission Role</th>
-                  <th>Liquid Wallet Balance</th>
-                  <th>System Identifier</th>
-                  <th>Account Status</th>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Balance</th>
+                  <th>Holdings</th>
+                  <th>User ID</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((u) => {
-                  const isAdmin = (u.usertype || '').toLowerCase() === 'admin';
+                {sortedUsers.map((u) => {
+                  const isAdmin = isAdminRole(u.usertype);
+                  const userHoldings = stocks.filter((s) => s.user === u._id);
+                  const holdingsValue = userHoldings.reduce((sum, s) => sum + Number(s.totalPrice || 0), 0);
+
                   return (
-                    <tr key={u._id}>
+                    <tr key={u._id} className={isAdmin ? 'pinned-admin-row' : ''}>
                       <td>
                         <div className="d-flex align-items-center gap-3">
                           <div
@@ -232,16 +259,37 @@ const Users = () => {
                               background: isAdmin
                                 ? 'linear-gradient(135deg, #f43f5e, #e11d48)'
                                 : 'linear-gradient(135deg, #6366f1, #3b82f6)',
-                              width: '32px',
-                              height: '32px',
-                              fontSize: '0.85rem',
+                              width: '34px',
+                              height: '34px',
+                              fontSize: '0.9rem',
                             }}
                           >
                             {(u.username || 'U').charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div className="fw-semibold text-white">{u.username}</div>
-                            <span className="text-secondary small">{isAdmin ? 'Super Admin' : 'Active Trader'}</span>
+                            <div className="fw-semibold text-white d-flex align-items-center gap-2">
+                              <span>{u.username}</span>
+                              {isAdmin && (
+                                <span
+                                  className="badge px-2 py-0.5"
+                                  style={{
+                                    backgroundColor: 'rgba(244, 63, 94, 0.15)',
+                                    color: '#fb7185',
+                                    border: '1px solid rgba(244, 63, 94, 0.35)',
+                                    borderRadius: '9999px',
+                                    fontSize: '0.65rem',
+                                    letterSpacing: '0.04em',
+                                    fontWeight: 700,
+                                  }}
+                                  title="Administrator Account"
+                                >
+                                  ADMIN
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-secondary small">
+                              {isAdmin ? 'Administrator' : 'Trader'}
+                            </span>
                           </div>
                         </div>
                       </td>
@@ -254,14 +302,16 @@ const Users = () => {
                           style={{
                             backgroundColor: isAdmin ? 'rgba(244, 63, 94, 0.15)' : 'rgba(99, 102, 241, 0.15)',
                             color: isAdmin ? '#fb7185' : '#818cf8',
-                            border: `1px solid ${isAdmin ? 'rgba(244, 63, 94, 0.35)' : 'rgba(99, 102, 241, 0.35)'}`,
+                            border: `1px solid ${
+                              isAdmin ? 'rgba(244, 63, 94, 0.35)' : 'rgba(99, 102, 241, 0.35)'
+                            }`,
                             padding: '0.35rem 0.65rem',
                             borderRadius: '6px',
                             textTransform: 'uppercase',
                             fontSize: '0.75rem',
                           }}
                         >
-                          {isAdmin ? '🛡️ Administrator' : '👤 Customer'}
+                          {isAdmin ? 'Administrator' : 'Trader'}
                         </span>
                       </td>
 
@@ -270,6 +320,24 @@ const Users = () => {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
+                      </td>
+
+                      <td>
+                        {userHoldings.length > 0 ? (
+                          <div>
+                            <span className="badge bg-success-subtle text-success fw-semibold px-2 py-1">
+                              {userHoldings.length} {userHoldings.length === 1 ? 'Asset' : 'Assets'}
+                            </span>
+                            <div className="text-secondary small font-monospace mt-1" style={{ fontSize: '0.75rem' }}>
+                              Val: ₹{Number(holdingsValue).toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted small">None</span>
+                        )}
                       </td>
 
                       <td>

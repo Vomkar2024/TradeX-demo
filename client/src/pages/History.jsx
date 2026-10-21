@@ -9,6 +9,9 @@ const History = () => {
   const [loading, setLoading] = useState(true);
 
   const userId = localStorage.getItem('userId');
+  const userType = localStorage.getItem('userType');
+  const email = localStorage.getItem('email');
+  const isDemo = localStorage.getItem('isDemoMode') === 'true' && userType !== 'admin' && email !== 'trader@tradex.com';
 
   useEffect(() => {
     fetchHistoryData();
@@ -44,56 +47,61 @@ const History = () => {
       <div className="page-header mb-4">
         <div>
           <h1 className="page-title">Activity History</h1>
-          <p className="page-subtitle">Complete ledger of your stock orders and account balance transactions</p>
+          <p className="page-subtitle">
+            {isDemo
+              ? 'History of your orders and trade executions'
+              : 'History of your orders and account transactions'}
+          </p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="category-tabs mb-4">
-        <button
-          type="button"
-          className={`category-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
-          onClick={() => setActiveTab('orders')}
-        >
-          <span>📜 Stock Orders</span>
-          <span className="badge bg-secondary-subtle text-secondary small">{orders.length}</span>
-        </button>
-        <button
-          type="button"
-          className={`category-tab-btn ${activeTab === 'transactions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('transactions')}
-        >
-          <span>💳 Balance Transactions</span>
-          <span className="badge bg-secondary-subtle text-secondary small">{transactions.length}</span>
-        </button>
-      </div>
+      {!isDemo && (
+        <div className="category-tabs mb-4">
+          <button
+            type="button"
+            className={`category-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            <span>📜 Stock Orders</span>
+            <span className="badge bg-secondary-subtle text-secondary small">{orders.length}</span>
+          </button>
+          <button
+            type="button"
+            className={`category-tab-btn ${activeTab === 'transactions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('transactions')}
+          >
+            <span>💳 Balance Transactions</span>
+            <span className="badge bg-secondary-subtle text-secondary small">{transactions.length}</span>
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="card shadow-sm border-0 rounded-4 p-5 text-center text-secondary">
-          Loading activity records...
+          Loading records...
         </div>
-      ) : activeTab === 'orders' ? (
+      ) : isDemo || activeTab === 'orders' ? (
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
           <div className="card-header py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
-            <h4 className="h5 fw-bold mb-0 text-white">Execution Orders Log</h4>
+            <h4 className="h5 fw-bold mb-0 text-white">Orders Log</h4>
             <span className="badge bg-secondary-subtle text-secondary small">{orders.length} total orders</span>
           </div>
 
           {orders.length === 0 ? (
-            <div className="p-5 text-center text-secondary">No stock order records found in ledger.</div>
+            <div className="p-5 text-center text-secondary">No orders recorded yet.</div>
           ) : (
             <div className="table-responsive">
               <table className="custom-table mb-0">
                 <thead>
                   <tr>
-                    <th>Side</th>
-                    <th>Security</th>
-                    <th>Asset Name</th>
-                    <th>Executed Units</th>
-                    <th>Unit Price</th>
-                    <th>Gross Order Total</th>
+                    <th>Type</th>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
                     <th>Status</th>
-                    <th>Timestamp</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -149,21 +157,21 @@ const History = () => {
       ) : (
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
           <div className="card-header py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
-            <h4 className="h5 fw-bold mb-0 text-white">Balance Transactions & Ledger</h4>
+            <h4 className="h5 fw-bold mb-0 text-white">Transactions Ledger</h4>
             <span className="badge bg-secondary-subtle text-secondary small">{transactions.length} entries</span>
           </div>
 
           {transactions.length === 0 ? (
-            <div className="p-5 text-center text-secondary">No transactions found in ledger.</div>
+            <div className="p-5 text-center text-secondary">No transactions recorded yet.</div>
           ) : (
             <div className="table-responsive">
               <table className="custom-table mb-0">
                 <thead>
                   <tr>
                     <th>Type</th>
-                    <th>Transaction Value</th>
-                    <th>Channel / Mode</th>
-                    <th>Recorded Timestamp</th>
+                    <th>Amount</th>
+                    <th>Payment Mode</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>

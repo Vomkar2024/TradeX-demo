@@ -11,13 +11,13 @@ const buyStock = async (req, res) => {
 
         const userData = await User.findById(user);
         if (!userData) {
-            return res.status(404).json({ message: "User account not found." });
+            return res.status(404).json({ message: "User not found" });
         }
 
         const currentBalance = Number(userData.balance);
         if (currentBalance < orderTotal) {
             return res.status(400).json({ 
-                message: `Insufficient account balance (₹${currentBalance.toFixed(2)}) for order total of ₹${orderTotal.toFixed(2)}.` 
+                message: `Insufficient balance. Need ₹${orderTotal.toFixed(2)}, available ₹${currentBalance.toFixed(2)}` 
             });
         }
 
@@ -63,12 +63,12 @@ const buyStock = async (req, res) => {
         await newOrder.save();
 
         return res.status(201).json({ 
-            message: "Purchase executed successfully", 
+            message: "Stock purchased successfully", 
             balance: userData.balance 
         });
     } catch (err) {
         console.error("Buy stock order error:", err);
-        return res.status(500).json({ message: "An unexpected error occurred while executing buy order." });
+        return res.status(500).json({ message: "Failed to buy stock" });
     }
 };
 
@@ -83,17 +83,17 @@ const sellStock = async (req, res) => {
         const userData = await User.findById(user);
 
         if (!userData) {
-            return res.status(404).json({ message: "User account not found." });
+            return res.status(404).json({ message: "User not found" });
         }
 
         if (!stock) {
-            return res.status(404).json({ message: `No holdings found for symbol ${symbol}.` });
+            return res.status(404).json({ message: `No holdings found for ${symbol}` });
         }
 
         const heldCount = Number(stock.count);
         if (heldCount < numCount) {
             return res.status(400).json({ 
-                message: `Insufficient shares held (${heldCount}) to fulfill sell order of ${numCount} units.` 
+                message: `Cannot sell ${numCount} shares. You only own ${heldCount}` 
             });
         }
 
@@ -125,12 +125,12 @@ const sellStock = async (req, res) => {
         await newOrder.save();
 
         return res.status(201).json({ 
-            message: "Sale executed successfully", 
+            message: "Stock sold successfully", 
             balance: userData.balance 
         });
     } catch (err) {
         console.error("Sell stock order error:", err);
-        return res.status(500).json({ message: "An unexpected error occurred while executing sell order." });
+        return res.status(500).json({ message: "Failed to sell stock" });
     }
 };
 
@@ -140,7 +140,7 @@ const fetchStocks = async (req, res) => {
         res.json(stocks);
     } catch (err) {
         console.error("Fetch stocks error:", err);
-        res.status(500).json({ message: "An error occurred while retrieving platform stock holdings." });
+        res.status(500).json({ message: "Failed to fetch stocks" });
     }
 };
 

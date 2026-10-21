@@ -1,14 +1,20 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { GeneralContext } from '../context/GeneralContext';
 import axiosInstance from './axiosInstance';
 import toast from 'react-hot-toast';
 
-const Login = ({ setIsLoginBox }) => {
+const Login = ({ setIsLoginBox, externalFill }) => {
   const { setEmail, setPassword, login, loginDemo } = useContext(GeneralContext);
   const [localEmail, setLocalEmail] = useState('');
   const [localPassword, setLocalPassword] = useState('');
 
-  // Forgot / Reset Password state
+  useEffect(() => {
+    if (externalFill?.email) {
+      setLocalEmail(externalFill.email);
+      setLocalPassword(externalFill.password);
+    }
+  }, [externalFill]);
+
   const [isForgotMode, setIsForgotMode] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -30,7 +36,6 @@ const Login = ({ setIsLoginBox }) => {
     setPassword(passVal);
   };
 
-  // Step 1: Request 6-digit OTP code using combined reset-password endpoint
   const handleRequestOtp = async (e) => {
     e?.preventDefault();
     if (!localEmail.trim()) {
@@ -45,25 +50,23 @@ const Login = ({ setIsLoginBox }) => {
       if (otp) {
         setGeneratedOtpHint(otp);
         setOtpCode(otp);
-        toast.success(`Verification code generated: ${otp}`);
+        toast.success(`Verification code: ${otp}`);
       } else {
         toast.success('Verification code sent to your email');
       }
       setOtpSent(true);
     } catch (err) {
-      console.warn('Backend unavailable, using simulated OTP for demo:', err);
-      // Graceful offline/demo fallback
-      const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtpHint(mockOtp);
-      setOtpCode(mockOtp);
+      console.warn('Backend unavailable, generating local code:', err);
+      const fallbackOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedOtpHint(fallbackOtp);
+      setOtpCode(fallbackOtp);
       setOtpSent(true);
-      toast.success(`Simulated OTP generated: ${mockOtp}`);
+      toast.success(`Verification code: ${fallbackOtp}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Step 2: Verify OTP and reset password using combined reset-password endpoint
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (!otpCode.trim()) {
@@ -97,8 +100,7 @@ const Login = ({ setIsLoginBox }) => {
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      console.warn('Backend reset failed, completing in simulated mode:', err);
-      // Fallback for offline demo
+      console.warn('Backend reset failed, updating locally:', err);
       toast.success('Password updated successfully! Sign in with your new credentials.');
       setLocalPassword(newPassword);
       setPassword(newPassword);
@@ -113,19 +115,18 @@ const Login = ({ setIsLoginBox }) => {
     }
   };
 
-  // RENDER: Forgot / Reset Password View
   if (isForgotMode) {
     return (
-      <div className="authForm card shadow-lg border-0 p-4 p-md-5">
-        <div className="text-center mb-4">
+      <div className="authForm card shadow-lg border-0">
+        <div className="text-center mb-3.5">
           <div
             className="brand-logo-badge mx-auto mb-2"
-            style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
+            style={{ width: '40px', height: '40px', fontSize: '1.05rem' }}
           >
             TX
           </div>
-          <h2 className="fw-bold mb-1">Reset Password</h2>
-          <p className="text-secondary small mb-0">
+          <h3 className="fw-bold mb-1 fs-4">Reset Password</h3>
+          <p className="text-secondary small mb-0" style={{ fontSize: '0.85rem' }}>
             {otpSent
               ? 'Enter the 6-digit code and choose a new password'
               : 'Enter your registered email to receive a verification code'}
@@ -133,7 +134,6 @@ const Login = ({ setIsLoginBox }) => {
         </div>
 
         {!otpSent ? (
-          /* Step 1: Email Form to request OTP */
           <form onSubmit={handleRequestOtp}>
             <div className="mb-3 text-start">
               <label htmlFor="forgotEmailInput" className="auth-form-label">
@@ -141,7 +141,7 @@ const Login = ({ setIsLoginBox }) => {
               </label>
               <input
                 type="email"
-                className="form-control auth-input-clean w-100"
+                className="form-control auth-input-clean auth-input-compact w-100"
                 id="forgotEmailInput"
                 placeholder="e.g. trader@tradex.com"
                 value={localEmail}
@@ -158,14 +158,15 @@ const Login = ({ setIsLoginBox }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="btn btn-primary w-100 py-3 fw-semibold shadow-sm mb-3 btn-auth-submit"
+              className="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm mb-3 btn-auth-submit"
             >
               {isSubmitting ? 'Sending Code...' : 'Send Verification Code →'}
             </button>
 
-            {/* Quick Fill for testing accounts */}
-            <div className="demo-quick-fill mt-2 mb-3 text-center">
-              <span className="text-secondary small d-block mb-2">Quick Test Accounts:</span>
+            <div className="demo-quick-fill mt-3 mb-2 text-center">
+              <span className="text-secondary small d-block mb-1.5" style={{ fontSize: '0.78rem' }}>
+                Test Accounts:
+              </span>
               <div className="d-flex flex-wrap gap-2 justify-content-center">
                 <button
                   type="button"
@@ -195,18 +196,16 @@ const Login = ({ setIsLoginBox }) => {
             </div>
           </form>
         ) : (
-          /* Step 2: Verification Code & New Password */
           <form onSubmit={handleResetPassword}>
             {generatedOtpHint && (
-              <div className="otp-preview-pill mb-3 text-center">
+              <div className="otp-preview-pill mb-3 text-center py-1.5">
                 <span className="otp-pill-label">Verification OTP:</span>
                 <span className="otp-pill-code">{generatedOtpHint}</span>
-                <span className="otp-pill-note">(Auto-filled for testing)</span>
               </div>
             )}
 
             <div className="mb-3 text-start">
-              <div className="d-flex justify-content-between align-items-center mb-1">
+              <div className="d-flex justify-content-between align-items-center mb-1.5">
                 <label htmlFor="otpCodeInput" className="auth-form-label mb-0">
                   6-Digit Verification Code
                 </label>
@@ -221,7 +220,7 @@ const Login = ({ setIsLoginBox }) => {
               </div>
               <input
                 type="text"
-                className="form-control auth-input-clean auth-otp-input w-100"
+                className="form-control auth-input-clean auth-input-compact auth-otp-input w-100"
                 id="otpCodeInput"
                 placeholder="123456"
                 maxLength={6}
@@ -238,7 +237,7 @@ const Login = ({ setIsLoginBox }) => {
               <div className="position-relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  className="form-control auth-input-clean w-100"
+                  className="form-control auth-input-clean auth-input-compact w-100"
                   id="newPasswordInput"
                   placeholder="At least 6 characters"
                   value={newPassword}
@@ -256,13 +255,13 @@ const Login = ({ setIsLoginBox }) => {
               </div>
             </div>
 
-            <div className="mb-4 text-start">
+            <div className="mb-3 text-start">
               <label htmlFor="confirmPasswordInput" className="auth-form-label">
                 Confirm New Password
               </label>
               <input
                 type={showPassword ? 'text' : 'password'}
-                className="form-control auth-input-clean w-100"
+                className="form-control auth-input-clean auth-input-compact w-100"
                 id="confirmPasswordInput"
                 placeholder="Re-enter new password"
                 value={confirmPassword}
@@ -274,7 +273,7 @@ const Login = ({ setIsLoginBox }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="btn btn-primary w-100 py-3 fw-semibold shadow-sm mb-3 btn-auth-submit"
+              className="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm mb-3 btn-auth-submit"
             >
               {isSubmitting ? 'Updating Password...' : 'Reset Password & Sign In →'}
             </button>
@@ -297,28 +296,28 @@ const Login = ({ setIsLoginBox }) => {
     );
   }
 
-  // RENDER: Default Sign In View
   return (
-    <form className="authForm card shadow-lg border-0 p-4 p-md-5" onSubmit={handleLogin}>
-      <div className="text-center mb-4">
+    <form className="authForm card shadow-lg border-0" onSubmit={handleLogin}>
+      <div className="text-center mb-3 mb-md-3.5">
         <div
           className="brand-logo-badge mx-auto mb-2"
-          style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
+          style={{ width: '40px', height: '40px', fontSize: '1.05rem' }}
         >
           TX
         </div>
-        <h2 className="fw-bold mb-1">Sign In to TradeX</h2>
-        <p className="text-secondary small mb-0">Access your professional trading terminal</p>
+        <h3 className="fw-bold mb-1 fs-4">Sign In to TradeX</h3>
+        <p className="text-secondary small mb-0" style={{ fontSize: '0.85rem' }}>
+          Enter your credentials to access your trading account
+        </p>
       </div>
 
-      {/* Email Input Field */}
       <div className="mb-3 text-start">
         <label htmlFor="loginEmailInput" className="auth-form-label">
           Email Address
         </label>
         <input
           type="email"
-          className="form-control auth-input-clean w-100"
+          className="form-control auth-input-clean auth-input-compact w-100"
           id="loginEmailInput"
           placeholder="e.g. trader@tradex.com"
           value={localEmail}
@@ -331,9 +330,8 @@ const Login = ({ setIsLoginBox }) => {
         />
       </div>
 
-      {/* Password Input Field with Forgot Password Link */}
-      <div className="mb-4 text-start">
-        <div className="d-flex justify-content-between align-items-center mb-1">
+      <div className="mb-3.5 text-start">
+        <div className="d-flex justify-content-between align-items-center mb-1.5">
           <label htmlFor="loginPasswordInput" className="auth-form-label mb-0">
             Password
           </label>
@@ -350,88 +348,73 @@ const Login = ({ setIsLoginBox }) => {
             Forgot Password?
           </button>
         </div>
-        <input
-          type="password"
-          className="form-control auth-input-clean w-100"
-          id="loginPasswordInput"
-          placeholder="Enter account password"
-          value={localPassword}
-          onChange={(e) => {
-            setLocalPassword(e.target.value);
-            setPassword(e.target.value);
-          }}
-          required
-          autoComplete="current-password"
-        />
+        <div className="position-relative">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            className="form-control auth-input-clean auth-input-compact w-100 pe-5"
+            id="loginPasswordInput"
+            placeholder="Enter account password"
+            value={localPassword}
+            onChange={(e) => {
+              setLocalPassword(e.target.value);
+              setPassword(e.target.value);
+            }}
+            required
+            autoComplete="current-password"
+          />
+          <button
+            type="button"
+            className="btn-toggle-eye"
+            onClick={() => setShowPassword(!showPassword)}
+            tabIndex={-1}
+            title={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? '👁️' : '👁️‍🗨️'}
+          </button>
+        </div>
       </div>
 
       <button
         type="submit"
-        className="btn btn-primary w-100 py-3 fw-semibold shadow-sm mb-3 btn-auth-submit"
+        className="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm mb-2.5 btn-auth-submit"
+        style={{ fontSize: '0.98rem' }}
       >
-        Sign In with Credentials
+        Sign In
       </button>
 
-      {/* Demo Mode Quick Access Section */}
-      <div className="demo-access-section">
-        <div className="demo-divider">
-          <span>OR EXPLORE INSTANTLY</span>
-        </div>
-
-        <button
-          type="button"
-          className="demo-action-btn-enhanced w-100"
-          onClick={() => loginDemo('customer')}
-        >
-          <div className="demo-action-content">
-            <div className="demo-action-icon-wrap">
-              <span className="demo-action-bolt">⚡</span>
-            </div>
-            <div className="demo-action-text text-start">
-              <div className="demo-action-heading">Launch ₹25,000 Demo Desk</div>
-              <div className="demo-action-sub">Instant risk-free equity simulation • No password needed</div>
-            </div>
-            <div className="demo-action-arrow">→</div>
-          </div>
-        </button>
-
-        {/* Quick Fill Options for Trader and Admin */}
-        <div className="demo-quick-fill mt-3 text-center">
-          <span className="text-secondary small d-block mb-2">Quick Auto-Fill Credentials:</span>
-          <div className="d-flex flex-wrap gap-2 justify-content-center">
-            <button
-              type="button"
-              className="btn-quick-fill"
-              onClick={() => fillCredentials('trader@tradex.com', 'trader123')}
-              title="Auto-fill Trader credentials"
-            >
-              <span>👤 Trader:</span>
-              <code>trader@tradex.com</code>
-            </button>
-            <button
-              type="button"
-              className="btn-quick-fill btn-quick-fill-admin"
-              onClick={() => fillCredentials('admin@tradex.com', 'admin123')}
-              title="Auto-fill System Admin credentials"
-            >
-              <span>🛡️ Admin:</span>
-              <code>admin@tradex.com</code>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <p className="mt-4 text-center text-secondary small mb-0">
+      <p className="mt-2.5 pt-1 mb-2 text-center text-secondary small" style={{ fontSize: '0.86rem' }}>
         Don't have an account?{' '}
         <span className="auth-switch-link" onClick={() => setIsLoginBox(false)}>
           Create an account
         </span>
       </p>
+
+      <div className="demo-access-section">
+        <div className="demo-divider my-2 p-0">
+          <span>OR EXPLORE IN DEMO</span>
+        </div>
+
+        <button
+          type="button"
+          className="demo-action-btn-enhanced w-100 py-2 px-3"
+          onClick={() => loginDemo('customer')}
+        >
+          <div className="demo-action-content">
+            <div className="demo-action-icon-wrap" style={{ width: '32px', height: '32px' }}>
+              <span className="demo-action-bolt">⚡</span>
+            </div>
+            <div className="demo-action-text text-start">
+              <div className="demo-action-heading fs-6">Try Demo Mode (₹25,000)</div>
+              <div className="demo-action-sub" style={{ fontSize: '0.75rem' }}>
+                Practice trading with virtual balance • No login needed
+              </div>
+            </div>
+            <div className="demo-action-arrow">→</div>
+          </div>
+        </button>
+      </div>
     </form>
   );
 };
 
 export default Login;
-
-
-

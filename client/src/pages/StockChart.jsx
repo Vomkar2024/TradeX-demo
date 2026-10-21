@@ -22,21 +22,19 @@ const StockChart = () => {
   const [stockRegistry, setStockRegistry] = useState(getStockRegistry);
   const [timeframe, setTimeframe] = useState('1M');
   const [chartType, setChartType] = useState('Line'); // 'Line' | 'Candles'
-  const [orderAction, setOrderAction] = useState('BUY'); // 'BUY' | 'SELL'
-  const [orderType, setOrderType] = useState('Market Order (Instant Fill)');
+  const [orderAction, setOrderAction] = useState('BUY');
+  const [orderType, setOrderType] = useState('Market Order');
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [userHoldings, setUserHoldings] = useState(0);
   const [hoveredData, setHoveredData] = useState(null);
 
-  // Sync selected symbol when URL param changes
   useEffect(() => {
     if (paramSymbol) {
       setSelectedSymbol(paramSymbol.toUpperCase());
     }
   }, [paramSymbol]);
 
-  // Listen to centralized market updates (under 5000)
   useEffect(() => {
     const unsubscribe = subscribeMarketUpdates(() => {
       setStockRegistry(getStockRegistry());
@@ -44,7 +42,6 @@ const StockChart = () => {
     return () => unsubscribe();
   }, []);
 
-  // Current stock details (guaranteed realistic price strictly under ₹5,000)
   const currentStock = useMemo(() => {
     if (stockRegistry[selectedSymbol]) {
       return stockRegistry[selectedSymbol];
@@ -217,7 +214,6 @@ const StockChart = () => {
   return (
     <div className="desk-page-wrapper">
       <div className="desk-main-container">
-        {/* Top Control Bar Matching Pic 1 */}
         <header className="desk-topbar">
           <div className="desk-topbar-left">
             <div className="stock-select-wrapper">
@@ -254,12 +250,11 @@ const StockChart = () => {
             </div>
 
             <div className="desk-subtitle">
-              {currentStock.name} • {currentStock.exchange} • Real-Time Interactive Feed
+              {currentStock.name} • {currentStock.exchange} • Live Feed
             </div>
           </div>
 
           <div className="desk-topbar-right">
-            {/* Timeframe Selector Pills */}
             <div className="desk-pill-group">
               {TIMEFRAMES.map((tf) => (
                 <button
@@ -273,7 +268,6 @@ const StockChart = () => {
               ))}
             </div>
 
-            {/* Line / Candles Toggle */}
             <div className="desk-pill-group">
               <button
                 type="button"
@@ -293,12 +287,9 @@ const StockChart = () => {
           </div>
         </header>
 
-        {/* Two-Column Grid: Chart Area on Left, Order Execution Slip on Right */}
         <div className="desk-grid-layout">
-          {/* Main Chart Area */}
           <div className="desk-chart-card">
             <div className="desk-chart-inner">
-              {/* Left Y-axis Price Axis */}
               <div className="desk-yaxis-labels">
                 {yTicks.map((tick, i) => (
                   <div key={i} className="desk-yaxis-tick">
@@ -307,7 +298,6 @@ const StockChart = () => {
                 ))}
               </div>
 
-              {/* Chart SVG Graphic */}
               <div className="desk-svg-container">
                 <svg
                   viewBox={`0 0 ${svgWidth} ${svgHeight}`}
@@ -422,7 +412,6 @@ const StockChart = () => {
               </div>
             </div>
 
-            {/* Bottom X-axis Timeline Milestones */}
             <div className="desk-xaxis-timeline">
               <span>Past Period ({timeframe})</span>
               <span>Market Midpoint</span>
@@ -430,11 +419,9 @@ const StockChart = () => {
             </div>
           </div>
 
-          {/* Right Column: Order Execution Slip */}
           <div className="desk-order-slip-card">
-            <h3 className="desk-slip-title">Order Execution Slip</h3>
+            <h3 className="desk-slip-title">Place Order</h3>
 
-            {/* BUY / SELL Switch */}
             <div className="desk-action-switch">
               <button
                 type="button"
@@ -453,7 +440,6 @@ const StockChart = () => {
             </div>
 
             <form onSubmit={handleExecuteOrder} className="desk-slip-form">
-              {/* Order Type */}
               <div className="mb-3">
                 <label className="desk-slip-label">Order Type</label>
                 <select
@@ -461,9 +447,9 @@ const StockChart = () => {
                   value={orderType}
                   onChange={(e) => setOrderType(e.target.value)}
                 >
-                  <option value="Market Order (Instant Fill)">Market Order (Instant Fill)</option>
-                  <option value="Limit Order (Simulated)">Limit Order (Simulated)</option>
-                  <option value="Stop-Loss Protected Order">Stop-Loss Protected Order</option>
+                  <option value="Market Order">Market Order</option>
+                  <option value="Limit Order">Limit Order</option>
+                  <option value="Stop-Loss Protected Order">Stop-Loss Order</option>
                 </select>
               </div>
 
@@ -536,7 +522,6 @@ const StockChart = () => {
                 </div>
               </div>
 
-              {/* Main Execute Button */}
               <button
                 type="submit"
                 className={`desk-execute-btn ${orderAction === 'BUY' ? 'btn-buy' : 'btn-sell'}`}
@@ -548,10 +533,10 @@ const StockChart = () => {
                 }
               >
                 {loading
-                  ? 'Executing Slip...'
+                  ? 'Processing...'
                   : orderAction === 'BUY'
-                  ? 'Execute BUY Order'
-                  : 'Execute SELL Order'}
+                  ? `Buy ${currentStock.symbol}`
+                  : `Sell ${currentStock.symbol}`}
               </button>
             </form>
           </div>

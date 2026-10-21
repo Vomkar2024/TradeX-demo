@@ -1,5 +1,4 @@
-// TradeX In-Browser Demo Engine
-// Provides high-fidelity simulated trading, balances, portfolio holdings, orders, and ledger.
+// Local mock store for demo/guest sessions and offline testing
 
 const DEMO_CUSTOMER = {
   _id: "usr_guest_demo",
@@ -412,6 +411,10 @@ export const demoStore = {
   },
 
   newTransaction(payload) {
+    if (this.isDemoActive()) {
+      throw new Error("Deposit and withdrawal operations are disabled in demo mode.");
+    }
+
     const { user, type, paymentMode, amount } = payload;
     const currentBalance = Number(localStorage.getItem("balance") || 0);
     const numAmount = Number(amount);
