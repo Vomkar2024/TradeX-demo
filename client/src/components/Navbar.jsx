@@ -10,7 +10,8 @@ const Navbar = () => {
   const username = userType === 'admin' && (!rawUsername || rawUsername === 'Demo Administrator') 
     ? 'Administrator' 
     : rawUsername;
-  const isDemo = localStorage.getItem('isDemoMode') === 'true' && userType !== 'admin';
+  const email = localStorage.getItem('email');
+  const isDemo = localStorage.getItem('isDemoMode') === 'true' && userType !== 'admin' && email !== 'trader@tradex.com';
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -91,7 +92,7 @@ const Navbar = () => {
                         ? 'System Administrator'
                         : isDemo
                         ? '⚡ Simulated Demo Account'
-                        : `${userType.toUpperCase()} Account`}
+                        : 'Live Trader Account'}
                     </div>
                   </div>
                   <div className="user-dropdown-divider"></div>

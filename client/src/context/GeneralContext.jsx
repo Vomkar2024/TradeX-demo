@@ -78,21 +78,11 @@ export const GeneralContextProvider = ({ children }) => {
       const loginInputs = { email, password };
       console.log("Login inputs:", loginInputs);
 
-      // Check if user is trying to use demo/trader credentials directly
-      if (email.trim().toLowerCase() === "demo@tradex.com" || email.trim().toLowerCase() === "trader@tradex.com") {
-        loginDemo("customer");
-        return;
-      }
-      if (email.trim().toLowerCase() === "admin@tradex.com") {
-        loginDemo("admin");
-        return;
-      }
-
       const res = await axiosInstance.post("/login", loginInputs);
       const userData = res.data.user || res.data;
       const normalizedUserType = (userData.usertype || userData.UserType || "customer").toLowerCase();
       const normalizedUsername = userData.username || userData.Username || (normalizedUserType === "admin" ? "Administrator" : "Trader");
-      const normalizedBalance = Number(userData.balance ?? userData.cashBalance ?? 500);
+      const normalizedBalance = Number(userData.balance ?? userData.cashBalance ?? 25000);
 
       localStorage.removeItem("isDemoMode");
       localStorage.setItem("userId", userData._id);
@@ -113,13 +103,10 @@ export const GeneralContextProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Login failed:", err);
-      // If server is unreachable and email contains 'demo', 'trader', or 'admin', offer demo login
-      if (email.toLowerCase().includes("demo") || email.toLowerCase().includes("admin") || email.toLowerCase().includes("trader")) {
-        const role = email.toLowerCase().includes("admin") ? "admin" : "customer";
-        if (role !== "admin") {
-          toast("Logging in via Simulated Demo Mode...", { icon: "⚡" });
-        }
-        loginDemo(role);
+      // Graceful offline fallback only if explicitly using demo@tradex.com and server is down
+      if (email.trim().toLowerCase() === "demo@tradex.com" && (!err.response || err.code === "ERR_NETWORK")) {
+        toast("Backend offline, launching simulated demo mode...", { icon: "⚡" });
+        loginDemo("customer");
         return;
       }
       toast.error(err.response?.data?.message || "Login failed. Please check credentials or backend server.");

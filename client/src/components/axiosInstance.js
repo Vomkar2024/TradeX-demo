@@ -9,8 +9,13 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Demo mode interceptor
+// Request interceptor: attach bearer token and handle demo fallback
 axiosInstance.interceptors.request.use(async (config) => {
+  const token = localStorage.getItem("tradex_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   if (demoStore.isDemoActive()) {
     config.adapter = async (cfg) => {
       const url = cfg.url || "";

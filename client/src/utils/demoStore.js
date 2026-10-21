@@ -2,9 +2,9 @@
 // Provides high-fidelity simulated trading, balances, portfolio holdings, orders, and ledger.
 
 const DEMO_CUSTOMER = {
-  _id: "usr_cust_101",
-  username: "Trader",
-  email: "trader@tradex.com",
+  _id: "usr_guest_demo",
+  username: "Guest Trader",
+  email: "guest.demo@tradex.com",
   usertype: "customer",
   balance: 25000,
 };
@@ -156,6 +156,11 @@ export const demoStore = {
       const rawUserId = localStorage.getItem("userId");
       const rawBalance = localStorage.getItem("balance");
 
+      const rawEmail = localStorage.getItem("email");
+      if (rawEmail === "trader@tradex.com" || userType === "admin") {
+        localStorage.removeItem("isDemoMode");
+      }
+
       // Auto-sanitize admin session so admin panel never shows "Demo Administrator" or demo IDs
       if (userType === "admin") {
         if (rawUsername === "Demo Administrator" || !rawUsername) {
@@ -208,6 +213,11 @@ export const demoStore = {
 
   isDemoActive() {
     this.migrateLegacy();
+    const email = localStorage.getItem("email");
+    const userType = localStorage.getItem("userType");
+    if (email === "trader@tradex.com" || userType === "admin") {
+      return false;
+    }
     return localStorage.getItem("isDemoMode") === "true";
   },
 

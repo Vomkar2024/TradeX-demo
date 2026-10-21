@@ -13,16 +13,15 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const CUSTOMER_DATA = {
-  userId: 'demo_cust_101',
+  userId: 'usr_cust_101',
   userType: 'customer',
   username: 'Trader',
   email: 'trader@tradex.com',
   balance: '25000',
-  isDemoMode: 'true',
   tradex_demo_stocks: JSON.stringify([
     {
-      _id: 'demo_stock_1',
-      user: 'demo_cust_101',
+      _id: 'stk_101',
+      user: 'usr_cust_101',
       symbol: 'TATASTEEL',
       name: 'Tata Steel Limited',
       price: 158.4,
@@ -31,8 +30,8 @@ const CUSTOMER_DATA = {
       stockExchange: 'NSE',
     },
     {
-      _id: 'demo_stock_2',
-      user: 'demo_cust_101',
+      _id: 'stk_102',
+      user: 'usr_cust_101',
       symbol: 'DOGE',
       name: 'Dogecoin (INR)',
       price: 12.5,
@@ -43,8 +42,8 @@ const CUSTOMER_DATA = {
   ]),
   tradex_demo_orders: JSON.stringify([
     {
-      _id: 'demo_ord_1',
-      user: 'demo_cust_101',
+      _id: 'ord_101',
+      user: 'usr_cust_101',
       symbol: 'TATASTEEL',
       name: 'Tata Steel Limited',
       stockType: 'Equity',
@@ -56,8 +55,8 @@ const CUSTOMER_DATA = {
       date: new Date(Date.now() - 3600000 * 24).toISOString(),
     },
     {
-      _id: 'demo_ord_2',
-      user: 'demo_cust_101',
+      _id: 'ord_102',
+      user: 'usr_cust_101',
       symbol: 'DOGE',
       name: 'Dogecoin (INR)',
       stockType: 'Crypto',
@@ -71,8 +70,8 @@ const CUSTOMER_DATA = {
   ]),
   tradex_demo_transactions: JSON.stringify([
     {
-      _id: 'demo_tx_101',
-      user: 'demo_cust_101',
+      _id: 'tx_101',
+      user: 'usr_cust_101',
       type: 'Deposit',
       paymentMode: 'UPI',
       amount: 25000,
@@ -169,7 +168,6 @@ const ADMIN_DATA = {
   username: 'Administrator',
   email: 'admin@tradex.com',
   balance: '100000',
-  isDemoMode: 'true',
   tradex_demo_orders: JSON.stringify(ADMIN_ORDERS),
   tradex_demo_transactions: JSON.stringify(ADMIN_TRANSACTIONS),
 };
@@ -177,12 +175,24 @@ const ADMIN_DATA = {
 async function captureAdminScreenshots(page) {
   console.log('--- Capturing Refreshed Admin Screenshots (Zero Demo Mode) ---');
   await page.goto(BASE_URL, { waitUntil: 'networkidle0' });
-  await page.evaluate((data) => {
-    localStorage.clear();
-    for (const [k, v] of Object.entries(data)) {
-      localStorage.setItem(k, v);
-    }
-  }, ADMIN_DATA);
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: 'networkidle0' });
+  await sleep(1000);
+  const signInBtn = await page.$('.btn-view-charts-hero');
+  if (signInBtn) {
+    await signInBtn.click();
+    await sleep(400);
+  }
+  const adminPill = await page.$('.btn-quick-fill-admin');
+  if (adminPill) {
+    await adminPill.click();
+    await sleep(300);
+  }
+  const submitBtn = await page.$('.btn-auth-submit');
+  if (submitBtn) {
+    await submitBtn.click();
+    await sleep(2500);
+  }
 
   // 9. Admin (All Users Directory) - Overwrite 09_admin_users.png
   console.log('[Admin 1/5] Capturing Platform User Directory (/users)...');
@@ -287,16 +297,21 @@ async function captureAll() {
       path: path.join(OUTPUT_DIR, '03_login_page.png'),
     });
 
-    // 4. Home Page (Customer Logged In)
-    console.log('[4/10] Capturing Home Page...');
-    await page.evaluate((data) => {
-      localStorage.clear();
-      for (const [k, v] of Object.entries(data)) {
-        localStorage.setItem(k, v);
-      }
-    }, CUSTOMER_DATA);
+    // 4. Home Page (Customer Logged In via Real-Time Authentication)
+    console.log('[4/10] Signing in Trader to Real-Time Backend...');
+    const traderPill = await page.$('.btn-quick-fill');
+    if (traderPill) {
+      await traderPill.click();
+      await sleep(300);
+    }
+    const submitBtn = await page.$('.btn-auth-submit');
+    if (submitBtn) {
+      await submitBtn.click();
+      await sleep(2500);
+    }
+    console.log('Capturing Home Page...');
     await page.goto(`${BASE_URL}/home`, { waitUntil: 'networkidle0' });
-    await sleep(1800);
+    await sleep(2000);
     await page.screenshot({
       path: path.join(OUTPUT_DIR, '04_home_page.png'),
     });

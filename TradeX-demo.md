@@ -229,7 +229,7 @@ erDiagram
 ● **Registration & Login**: Secure user registration with email validation, bcrypt password hashing, and JWT cookie session management.  
 ● **Forgot & Reset Password**: Secure self-service password recovery utilizing 6-digit OTP codes with 15-minute expiration windows.  
 ● **Role-Based Access Control (RBAC)**: Segregated customer trading views and administrative surveillance dashboards.  
-● **Dual-Mode Demo Integration**: Instant 1-click access to pre-configured Customer (`trader@tradex.com`) and Admin (`admin@tradex.com`) accounts without registration barriers.
+● **Real-Time Account & Demo Integration**: Instant 1-click access to pre-configured Real-Time Trader (`trader@tradex.com`) and System Admin (`admin@tradex.com`) accounts with live MongoDB backend synchronization.
 
 #### 2. Market Feeds & Asset Listings
 ● **Comprehensive Asset Universe**: Catalog of Indian equities (Reliance, Tata Steel, Infosys, HDFC Bank, ITC) and liquid cryptocurrencies (DOGE, XRP, ADA).  
