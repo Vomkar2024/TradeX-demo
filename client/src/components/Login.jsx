@@ -14,8 +14,6 @@ const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode, externalFill }) =
     if (externalFill?.email) {
       setLocalEmail(externalFill.email);
       setLocalPassword(externalFill.password);
-      setEmail(externalFill.email);
-      setPassword(externalFill.password);
     }
   }
 

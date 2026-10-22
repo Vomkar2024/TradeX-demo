@@ -172,32 +172,81 @@ const ADMIN_DATA = {
   tradex_demo_transactions: JSON.stringify(ADMIN_TRANSACTIONS),
 };
 
-async function captureAdminScreenshots(page) {
-  console.log('--- Capturing Refreshed Admin Screenshots (Zero Demo Mode) ---');
-  await page.goto(BASE_URL, { waitUntil: 'networkidle0' });
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: 'networkidle0' });
-  await sleep(1000);
-  const signInBtn = await page.$('.btn-view-charts-hero');
+async function performLogin(page, email, password, roleName = 'Trader') {
+  console.log(`[Auth] Attempting login for ${roleName} (${email})...`);
+  
+  // Ensure auth modal is opened
+  let signInBtn = await page.$('.btn-view-charts-hero');
   if (signInBtn) {
     await signInBtn.click();
+    await sleep(500);
+  }
+
+  let filled = false;
+  // Try Quick Fill dropdown first
+  const quickToggle = await page.$('.btn-quick-fill-dropdown-toggle');
+  if (quickToggle) {
+    await quickToggle.click();
     await sleep(400);
+    const selector = roleName.toLowerCase() === 'admin' 
+      ? '.btn-admin-fill-action' 
+      : '.btn-fill-action:not(.btn-admin-fill-action)';
+    const fillBtn = await page.$(selector);
+    if (fillBtn) {
+      await fillBtn.click();
+      filled = true;
+      await sleep(400);
+    }
   }
-  const adminPill = await page.$('.btn-quick-fill-admin');
-  if (adminPill) {
-    await adminPill.click();
-    await sleep(300);
+
+  // Fallback to typing directly into inputs
+  if (!filled) {
+    const emailInput = await page.$('#loginEmailInput');
+    const passInput = await page.$('#loginPasswordInput');
+    if (emailInput && passInput) {
+      await emailInput.click({ clickCount: 3 });
+      await emailInput.type(email);
+      await passInput.click({ clickCount: 3 });
+      await passInput.type(password);
+      await sleep(300);
+      filled = true;
+    }
   }
+
+  // Click Submit
   const submitBtn = await page.$('.btn-auth-submit');
   if (submitBtn) {
     await submitBtn.click();
     await sleep(2500);
   }
 
+  // Check login state
+  const isAuthed = await page.evaluate(() => !!localStorage.getItem('userType'));
+  console.log(`[Auth] Login status for ${roleName}: ${isAuthed ? 'Success' : 'Pending fallback'}`);
+  return isAuthed;
+}
+
+async function captureAdminScreenshots(page) {
+  console.log('--- Capturing Refreshed Admin Screenshots ---');
+  await page.goto(BASE_URL, { waitUntil: 'networkidle0' });
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: 'networkidle0' });
+  await sleep(1000);
+
+  const loggedIn = await performLogin(page, 'admin@tradex.com', 'admin123', 'Admin');
+  if (!loggedIn) {
+    console.log('[Auth] Applying fallback Admin session tokens in localStorage...');
+    await page.evaluate((adminData) => {
+      for (const [k, v] of Object.entries(adminData)) {
+        localStorage.setItem(k, v);
+      }
+    }, ADMIN_DATA);
+  }
+
   // 9. Admin (All Users Directory) - Overwrite 09_admin_users.png
   console.log('[Admin 1/5] Capturing Platform User Directory (/users)...');
   await page.goto(`${BASE_URL}/users`, { waitUntil: 'networkidle0' });
-  await sleep(1800);
+  await sleep(2000);
   await page.screenshot({
     path: path.join(OUTPUT_DIR, '09_admin_users.png'),
   });
@@ -205,7 +254,7 @@ async function captureAdminScreenshots(page) {
   // 10. Orders (Admin Surveillance Blotter) - Overwrite 10_admin_orders.png
   console.log('[Admin 2/5] Capturing Orders Surveillance Blotter (/all-orders)...');
   await page.goto(`${BASE_URL}/all-orders`, { waitUntil: 'networkidle0' });
-  await sleep(1800);
+  await sleep(2000);
   await page.screenshot({
     path: path.join(OUTPUT_DIR, '10_admin_orders.png'),
   });
@@ -213,7 +262,7 @@ async function captureAdminScreenshots(page) {
   // 11. Admin Dashboard (Market Surveillance)
   console.log('[Admin 3/5] Capturing Admin Market Surveillance Desk (/admin)...');
   await page.goto(`${BASE_URL}/admin`, { waitUntil: 'networkidle0' });
-  await sleep(2200);
+  await sleep(2500);
   await page.screenshot({
     path: path.join(OUTPUT_DIR, '11_admin_dashboard.png'),
   });
@@ -221,7 +270,7 @@ async function captureAdminScreenshots(page) {
   // 12. Admin Transactions (Treasury & Financial Ledger)
   console.log('[Admin 4/5] Capturing Financial Treasury Ledger (/all-transactions)...');
   await page.goto(`${BASE_URL}/all-transactions`, { waitUntil: 'networkidle0' });
-  await sleep(1800);
+  await sleep(2000);
   await page.screenshot({
     path: path.join(OUTPUT_DIR, '12_admin_transactions.png'),
   });
@@ -229,12 +278,12 @@ async function captureAdminScreenshots(page) {
   // 13. Admin Stock Simulation & Control Desk
   console.log('[Admin 5/5] Capturing Institutional Stock Simulation Desk (/admin-stock/RELIANCE)...');
   await page.goto(`${BASE_URL}/admin-stock/RELIANCE`, { waitUntil: 'networkidle0' });
-  await sleep(2200);
+  await sleep(2500);
   await page.screenshot({
     path: path.join(OUTPUT_DIR, '13_admin_stock_desk.png'),
   });
 
-  console.log('✅ Admin screenshots successfully captured with zero demo traces!');
+  console.log('✅ Admin screenshots successfully captured!');
 }
 
 async function captureAll() {
@@ -275,7 +324,7 @@ async function captureAll() {
     const signInBtn = await page.$('.btn-view-charts-hero');
     if (signInBtn) {
       await signInBtn.click();
-      await sleep(500);
+      await sleep(600);
     }
     const switchLink = await page.$('.auth-switch-link');
     if (switchLink) {
@@ -297,21 +346,21 @@ async function captureAll() {
       path: path.join(OUTPUT_DIR, '03_login_page.png'),
     });
 
-    // 4. Home Page (Customer Logged In via Real-Time Authentication)
+    // 4. Home Page (Customer Logged In)
     console.log('[4/10] Signing in Trader to Real-Time Backend...');
-    const traderPill = await page.$('.btn-quick-fill');
-    if (traderPill) {
-      await traderPill.click();
-      await sleep(300);
+    const loggedIn = await performLogin(page, 'trader@tradex.com', 'trader123', 'Trader');
+    if (!loggedIn) {
+      console.log('[Auth] Applying fallback Trader session tokens in localStorage...');
+      await page.evaluate((custData) => {
+        for (const [k, v] of Object.entries(custData)) {
+          localStorage.setItem(k, v);
+        }
+      }, CUSTOMER_DATA);
     }
-    const submitBtn = await page.$('.btn-auth-submit');
-    if (submitBtn) {
-      await submitBtn.click();
-      await sleep(2500);
-    }
+
     console.log('Capturing Home Page...');
     await page.goto(`${BASE_URL}/home`, { waitUntil: 'networkidle0' });
-    await sleep(2000);
+    await sleep(2500);
     await page.screenshot({
       path: path.join(OUTPUT_DIR, '04_home_page.png'),
     });
@@ -319,7 +368,7 @@ async function captureAll() {
     // 5. Profile Page (User)
     console.log('[5/10] Capturing Profile Page (User)...');
     await page.goto(`${BASE_URL}/profile`, { waitUntil: 'networkidle0' });
-    await sleep(1200);
+    await sleep(2000);
     await page.screenshot({
       path: path.join(OUTPUT_DIR, '05_profile_page.png'),
     });
@@ -327,7 +376,7 @@ async function captureAll() {
     // 6. Stock Chart & Paper Trading Desk
     console.log('[6/10] Capturing Stock Chart...');
     await page.goto(`${BASE_URL}/stock/TATASTEEL`, { waitUntil: 'networkidle0' });
-    await sleep(1800);
+    await sleep(2500);
     await page.screenshot({
       path: path.join(OUTPUT_DIR, '06_stock_chart.png'),
     });
@@ -335,7 +384,7 @@ async function captureAll() {
     // 7. Portfolio Page
     console.log('[7/10] Capturing Portfolio Page...');
     await page.goto(`${BASE_URL}/portfolio`, { waitUntil: 'networkidle0' });
-    await sleep(1500);
+    await sleep(2000);
     await page.screenshot({
       path: path.join(OUTPUT_DIR, '07_portfolio_page.png'),
     });
@@ -343,7 +392,7 @@ async function captureAll() {
     // 8. History Page
     console.log('[8/10] Capturing History Page...');
     await page.goto(`${BASE_URL}/history`, { waitUntil: 'networkidle0' });
-    await sleep(1500);
+    await sleep(2000);
     await page.screenshot({
       path: path.join(OUTPUT_DIR, '08_history_page.png'),
     });
