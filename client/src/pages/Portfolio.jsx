@@ -18,23 +18,30 @@ const Portfolio = () => {
 
   const userId = localStorage.getItem('userId');
 
-  useEffect(() => {
-    fetchUserStocks();
-  }, []);
+  const [refreshCount, setRefreshCount] = useState(0);
 
-  const fetchUserStocks = async () => {
-    setLoading(true);
-    try {
-      const res = await axiosInstance.get('/fetch-stocks');
-      const userHoldings = (res.data || []).filter((s) => s.user === userId);
-      setStocks(userHoldings);
-    } catch (err) {
-      console.error('Fetch stocks error:', err);
-      toast.error('Failed to load portfolio holdings');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUserStocks = async () => {
+      try {
+        const res = await axiosInstance.get('/fetch-stocks');
+        if (!isMounted) return;
+        const userHoldings = (res.data || []).filter((s) => s.user === userId);
+        setStocks(userHoldings);
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Fetch stocks error:', err);
+        toast.error('Failed to load portfolio holdings');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchUserStocks();
+    return () => {
+      isMounted = false;
+    };
+  }, [userId, refreshCount]);
 
   const handleSellStock = async (e) => {
     e.preventDefault();
@@ -69,7 +76,7 @@ const Portfolio = () => {
         updateBalance(updatedBalance);
         toast.success(`Sold ${countToSell} shares of ${sellModalStock.symbol}!`);
         setSellModalStock(null);
-        fetchUserStocks();
+        setRefreshCount((c) => c + 1);
       }
     } catch (err) {
       console.error('Sell stock error:', err);
@@ -118,7 +125,7 @@ const Portfolio = () => {
         updateBalance(updatedBalance);
         toast.success(`Purchased ${countToBuy} shares of ${buyModalStock.symbol}!`);
         setBuyModalStock(null);
-        fetchUserStocks();
+        setRefreshCount((c) => c + 1);
       }
     } catch (err) {
       console.error('Buy stock error:', err);

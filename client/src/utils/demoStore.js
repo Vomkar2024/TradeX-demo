@@ -446,7 +446,7 @@ export const demoStore = {
     return { message: "success", balance: newBalance };
   },
 
-  getUser(userId) {
+  getUser(_userId) {
     const isCustomer = localStorage.getItem("userType") !== "admin";
     const user = isCustomer ? { ...DEMO_CUSTOMER } : { ...DEMO_ADMIN };
     user.balance = Number(localStorage.getItem("balance") || user.balance);

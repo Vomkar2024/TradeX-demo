@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { GeneralContext } from '../context/GeneralContext';
 import axiosInstance from './axiosInstance';
 import toast from 'react-hot-toast';
@@ -8,15 +8,16 @@ const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode, externalFill }) =
   const [localEmail, setLocalEmail] = useState('');
   const [localPassword, setLocalPassword] = useState('');
 
-  // Handle external credentials fill from Quick Fill dropdown
-  useEffect(() => {
+  const [prevExternalFill, setPrevExternalFill] = useState(externalFill);
+  if (externalFill !== prevExternalFill) {
+    setPrevExternalFill(externalFill);
     if (externalFill?.email) {
       setLocalEmail(externalFill.email);
       setLocalPassword(externalFill.password);
       setEmail(externalFill.email);
       setPassword(externalFill.password);
     }
-  }, [externalFill, setEmail, setPassword]);
+  }
 
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -27,7 +28,9 @@ const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode, externalFill }) =
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Clean reset form state when leaving forgot password mode
-  useEffect(() => {
+  const [prevForgotMode, setPrevForgotMode] = useState(isForgotMode);
+  if (isForgotMode !== prevForgotMode) {
+    setPrevForgotMode(isForgotMode);
     if (!isForgotMode) {
       setOtpSent(false);
       setOtpCode('');
@@ -35,7 +38,7 @@ const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode, externalFill }) =
       setNewPassword('');
       setConfirmPassword('');
     }
-  }, [isForgotMode]);
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault();

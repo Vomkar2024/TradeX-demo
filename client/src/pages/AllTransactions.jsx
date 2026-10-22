@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axiosInstance from '../components/axiosInstance';
 import toast from 'react-hot-toast';
 import { BiSearch } from 'react-icons/bi';
@@ -12,12 +12,8 @@ const AllTransactions = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
 
-  useEffect(() => {
-    fetchTransactionsAndUsers();
-  }, []);
-
-  const fetchTransactionsAndUsers = async () => {
-    setLoading(true);
+  const fetchTransactionsAndUsers = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
       const [txRes, usersReg] = await Promise.all([
         axiosInstance.get('/fetch-transactions'),
@@ -31,7 +27,33 @@ const AllTransactions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadInitialTransactions = async () => {
+      try {
+        const [txRes, usersReg] = await Promise.all([
+          axiosInstance.get('/fetch-transactions'),
+          fetchUserRegistry(axiosInstance),
+        ]);
+        if (!isMounted) return;
+        setTransactions((txRes.data || []).reverse());
+        setUserMap(usersReg || {});
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Fetch transactions error:', err);
+        toast.error('Failed to load transaction ledger');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadInitialTransactions();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Summary stats
   const totalCount = transactions.length;
@@ -100,7 +122,7 @@ const AllTransactions = () => {
         <button
           type="button"
           className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-          onClick={fetchTransactionsAndUsers}
+          onClick={() => fetchTransactionsAndUsers(true)}
           disabled={loading}
           title="Refresh transactions"
         >

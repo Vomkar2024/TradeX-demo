@@ -1,14 +1,14 @@
-import { useEffect } from 'react';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
 const LoginProtector = ({ children }) => {
-  useEffect(() => {
-    const userType = localStorage.getItem('userType');
-    if (userType === 'customer') {
-      window.location.href = '/home';
-    } else if (userType === 'admin') {
-      window.location.href = '/admin';
-    }
-  }, []);
+  const userType = localStorage.getItem('userType');
+  if (userType === 'customer') {
+    return <Navigate to="/home" replace />;
+  }
+  if (userType === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
 
   return children;
 };

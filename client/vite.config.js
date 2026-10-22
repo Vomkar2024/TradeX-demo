@@ -12,9 +12,9 @@ function autoStartBackendPlugin() {
 
   return {
     name: 'auto-start-backend',
-    configureServer(server) {
+    configureServer(_server) {
       // Probe if backend is already listening on port 8000
-      const req = http.get('http://localhost:8000/api/health', (res) => {
+      const req = http.get('http://localhost:8000/api/health', (_res) => {
         console.log('\x1b[32m%s\x1b[0m', '⚡ [TradeX] Backend is already running on http://localhost:8000')
       })
 
@@ -36,7 +36,7 @@ function autoStartBackendPlugin() {
         if (backendProcess) {
           try {
             backendProcess.kill()
-          } catch (e) {
+          } catch {
             // ignore
           }
         }
@@ -60,5 +60,23 @@ export default defineConfig({
   plugins: [react(), autoStartBackendPlugin()],
   server: {
     port: 5173,
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('node_modules/react-router-dom/')
+          ) {
+            return 'vendor-react'
+          }
+          if (id.includes('node_modules/react-icons/')) {
+            return 'vendor-icons'
+          }
+        },
+      },
+    },
   },
 })

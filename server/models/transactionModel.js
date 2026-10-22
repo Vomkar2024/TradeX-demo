@@ -13,3 +13,6 @@ const Transaction = mongoose.models.transactions || mongoose.model("transactions
 module.exports = Transaction;
 module.exports.Transaction = Transaction;
 module.exports.transactionSchema = transactionSchema;
+module.exports.TransactionSchema = transactionSchema;
+module.exports.transactionsSchema = transactionSchema;
+module.exports.TransactionsSchema = transactionSchema;

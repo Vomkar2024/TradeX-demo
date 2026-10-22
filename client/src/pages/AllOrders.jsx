@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axiosInstance from '../components/axiosInstance';
 import toast from 'react-hot-toast';
 import { BiSearch } from 'react-icons/bi';
@@ -12,12 +12,8 @@ const AllOrders = () => {
   const [search, setSearch] = useState('');
   const [sideFilter, setSideFilter] = useState('all');
 
-  useEffect(() => {
-    fetchOrdersAndUsers();
-  }, []);
-
-  const fetchOrdersAndUsers = async () => {
-    setLoading(true);
+  const fetchOrdersAndUsers = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
       const [ordersRes, usersReg] = await Promise.all([
         axiosInstance.get('/fetch-orders'),
@@ -31,7 +27,33 @@ const AllOrders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadInitialData = async () => {
+      try {
+        const [ordersRes, usersReg] = await Promise.all([
+          axiosInstance.get('/fetch-orders'),
+          fetchUserRegistry(axiosInstance),
+        ]);
+        if (!isMounted) return;
+        setOrders((ordersRes.data || []).reverse());
+        setUserMap(usersReg || {});
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Fetch orders error:', err);
+        toast.error('Failed to load orders audit log');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadInitialData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const totalOrders = orders.length;
   const buyOrders = orders.filter((o) => (o.orderType || '').toLowerCase() === 'buy');
@@ -83,7 +105,7 @@ const AllOrders = () => {
         <button
           type="button"
           className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-          onClick={fetchOrdersAndUsers}
+          onClick={() => fetchOrdersAndUsers(true)}
           disabled={loading}
           title="Refresh orders"
         >

@@ -4,40 +4,58 @@ const User = require("../models/userModel.js");
 
 const JWT_SECRET = process.env.JWT_SECRET || "jwtSecretVeryConfidential";
 
+// Helper to generate consistent signed JWT
+const generateToken = (user) => {
+    return jwt.sign(
+        {
+            id: user._id,
+            email: user.email,
+            usertype: user.usertype
+        },
+        JWT_SECRET,
+        { expiresIn: 3600 * 24 } // 24 hours
+    );
+};
+
+// Helper to sanitize user object (exclude sensitive fields)
+const sanitizeUser = (user, token = null) => {
+    return {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        usertype: user.usertype,
+        balance: user.balance,
+        ...(token ? { token } : {})
+    };
+};
+
 const register = async (req, res) => {
     const { username, email, usertype, password } = req.body;
     try {
-        const existingUser = await User.findOne({ email });
+        if (!email || !password || !username) {
+            return res.status(400).json({ message: "Username, email, and password are required" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const existingUser = await User.findOne({ email: normalizedEmail });
         if (existingUser) {
             return res.status(400).json({ message: "User with this email already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({
-            username,
-            email,
-            usertype,
+            username: username.trim(),
+            email: normalizedEmail,
+            usertype: usertype || "customer",
             password: hashedPassword,
             balance: 500,
         });
 
         const userCreated = await newUser.save();
+        const token = generateToken(userCreated);
 
-        const token = jwt.sign(
-            { id: userCreated._id },
-            JWT_SECRET,
-            { expiresIn: 3600 }
-        );
-
-        res.cookie("token", token);
-        return res.status(201).json({
-            _id: userCreated._id,
-            username: userCreated.username,
-            email: userCreated.email,
-            usertype: userCreated.usertype,
-            balance: userCreated.balance,
-            token
-        });
+        res.cookie("token", token, { httpOnly: true, sameSite: "lax" });
+        return res.status(201).json(sanitizeUser(userCreated, token));
     } catch (error) {
         console.error("User registration error:", error);
         return res.status(500).json({ message: "Registration failed. Please try again." });
@@ -47,26 +65,32 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { email, password } = req.body;
     try {
-        let user = await User.findOne({ email });
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        let user = await User.findOne({ email: normalizedEmail });
 
         // Auto-seed demo/trader accounts on demand if requested
-        if (!user && (email === "trader@tradex.com" || email === "demo@tradex.com" || email === "admin@tradex.com")) {
+        if (!user && (normalizedEmail === "trader@tradex.com" || normalizedEmail === "demo@tradex.com" || normalizedEmail === "admin@tradex.com")) {
             const seedDemoAccounts = require("../demoseed/seedDemo.js");
             await seedDemoAccounts();
-            user = await User.findOne({ email });
+            user = await User.findOne({ email: normalizedEmail });
         }
 
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
-        } else {
-            const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: 3600 });
-            res.cookie("token", token);
-            return res.json(user);
         }
+
+        const token = generateToken(user);
+        res.cookie("token", token, { httpOnly: true, sameSite: "lax" });
+        return res.json(sanitizeUser(user, token));
     } catch (error) {
         console.error("User login error:", error);
         return res.status(500).json({ message: "Authentication failed" });
@@ -74,13 +98,13 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-    res.clearCookie('token');
-    res.status(200).send('Logged out successfully');
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logged out successfully" });
 };
 
 const fetchUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id).select("-password -resetPasswordToken -resetPasswordExpires");
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -93,7 +117,7 @@ const fetchUserById = async (req, res) => {
 
 const fetchUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().select("-password -resetPasswordToken -resetPasswordExpires");
         res.json(users);
     } catch (err) {
         console.error("Fetch users error:", err);
@@ -177,4 +201,3 @@ module.exports = {
     register,
     resetPassword
 };
-

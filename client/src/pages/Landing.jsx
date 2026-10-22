@@ -23,12 +23,6 @@ const Landing = () => {
     };
   }, [setShowAuthModal]);
 
-  // Close Quick Fill dropdown when changing auth tabs or modes
-  useEffect(() => {
-    if (!isLoginBox || isForgotMode) {
-      setIsQuickFillOpen(false);
-    }
-  }, [isLoginBox, isForgotMode]);
 
   // Close Quick Fill dropdown on outside click
   useEffect(() => {

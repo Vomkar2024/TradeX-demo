@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { BiSearch } from 'react-icons/bi';
 import { FiRefreshCw, FiTrendingUp, FiPieChart, FiDollarSign, FiLayers, FiEye } from 'react-icons/fi';
 import '../styles/Admin.css';
@@ -9,21 +9,54 @@ import { getMarketAssets, subscribeMarketUpdates, saveMarketAssets } from '../ut
 import { fetchUserRegistry, resolveUserIdentity } from '../utils/userLookup';
 
 const Admin = () => {
-  const [trendingStocks, setTrendingStocks] = useState([]);
+  const [trendingStocks, setTrendingStocks] = useState(() => getMarketAssets());
   const [allStocks, setAllStocks] = useState([]);
   const [userMap, setUserMap] = useState({});
   const [search, setSearch] = useState('');
   const [poolSearch, setPoolSearch] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [assetFilter, setAssetFilter] = useState('all'); // 'all' | 'equity' | 'crypto'
   const [poolViewMode, setPoolViewMode] = useState('consolidated'); // 'consolidated' | 'detailed'
 
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchTrending = useCallback(() => {
+    setTrendingStocks(getMarketAssets());
+    setLoading(false);
+  }, []);
+
+  const handleRefresh = useCallback(async () => {
     fetchTrending();
-    fetchAllStocks();
-    loadUsers();
+    try {
+      const [stocksRes, reg] = await Promise.all([
+        axiosInstance.get('/fetch-stocks').catch(() => ({ data: [] })),
+        fetchUserRegistry(axiosInstance).catch(() => ({})),
+      ]);
+      setAllStocks(stocksRes.data || []);
+      setUserMap(reg || {});
+    } catch (err) {
+      console.error('Refresh error:', err);
+    }
+  }, [fetchTrending]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const initAdminData = async () => {
+      try {
+        const [stocksRes, reg] = await Promise.all([
+          axiosInstance.get('/fetch-stocks').catch(() => ({ data: [] })),
+          fetchUserRegistry(axiosInstance).catch(() => ({})),
+        ]);
+        if (!isMounted) return;
+        setAllStocks(stocksRes.data || []);
+        setUserMap(reg || {});
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Failed loading admin data:', err);
+      }
+    };
+
+    initAdminData();
 
     const unsubscribe = subscribeMarketUpdates((updated) => {
       setTrendingStocks(updated);
@@ -56,33 +89,11 @@ const Admin = () => {
     }, 4500);
 
     return () => {
+      isMounted = false;
       unsubscribe();
       clearInterval(tickInterval);
     };
   }, []);
-
-  const fetchTrending = async () => {
-    setTrendingStocks(getMarketAssets());
-    setLoading(false);
-  };
-
-  const loadUsers = async () => {
-    try {
-      const reg = await fetchUserRegistry(axiosInstance);
-      setUserMap(reg);
-    } catch (e) {
-      console.warn('Failed loading user registry:', e);
-    }
-  };
-
-  const fetchAllStocks = async () => {
-    try {
-      const res = await axiosInstance.get('/fetch-stocks');
-      setAllStocks(res.data || []);
-    } catch (err) {
-      console.error('Fetch stocks error:', err);
-    }
-  };
 
   const totalHoldingsValuation = allStocks.reduce((sum, s) => sum + Number(s.totalPrice || 0), 0);
   const totalCirculatingShares = allStocks.reduce((sum, s) => sum + Number(s.count || 0), 0);
@@ -178,11 +189,7 @@ const Admin = () => {
         <button
           type="button"
           className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-          onClick={() => {
-            fetchTrending();
-            fetchAllStocks();
-            loadUsers();
-          }}
+          onClick={handleRefresh}
           title="Refresh market surveillance feed"
         >
           <FiRefreshCw />

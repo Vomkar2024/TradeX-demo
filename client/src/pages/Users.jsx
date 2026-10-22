@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axiosInstance from '../components/axiosInstance';
 import toast from 'react-hot-toast';
 import { BiSearch } from 'react-icons/bi';
@@ -11,12 +11,8 @@ const Users = () => {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
       const [usersRes, stocksRes] = await Promise.all([
         axiosInstance.get('/fetch-users'),
@@ -30,7 +26,33 @@ const Users = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadInitialUsers = async () => {
+      try {
+        const [usersRes, stocksRes] = await Promise.all([
+          axiosInstance.get('/fetch-users'),
+          axiosInstance.get('/fetch-stocks').catch(() => ({ data: [] })),
+        ]);
+        if (!isMounted) return;
+        setUsers(usersRes.data || []);
+        setStocks(stocksRes.data || []);
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Fetch users error:', err);
+        toast.error('Failed to load users directory');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadInitialUsers();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const isTraderRole = (role) => {
     const r = (role || '').toLowerCase();
@@ -94,7 +116,7 @@ const Users = () => {
         <button
           type="button"
           className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-          onClick={fetchData}
+          onClick={() => fetchData(true)}
           disabled={loading}
           title="Refresh users"
         >

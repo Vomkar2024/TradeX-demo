@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useId, useMemo } from 'react';
 
 const MiniCandleChart = ({
   symbol = 'RELIANCE',
@@ -10,12 +10,10 @@ const MiniCandleChart = ({
 }) => {
   const isPositive = Number(change) >= 0;
   const strokeColor = isPositive ? '#10b981' : '#f43f5e';
-  const gradId = useMemo(
-    () => `grad-${symbol.replace(/[^a-zA-Z0-9]/g, '')}-${Math.floor(Math.random() * 10000)}`,
-    [symbol]
-  );
+  const rawId = useId();
+  const gradId = `grad-${symbol.replace(/[^a-zA-Z0-9]/g, '')}-${rawId.replace(/:/g, '')}`;
 
-  const seriesData = useMemo(() => {
+  const { seriesData, linePath, areaPath, lastPoint, getY } = useMemo(() => {
     const base = Number(price) || 100;
     const count = type === 'candle' ? 9 : 16;
     const result = [];
@@ -38,44 +36,45 @@ const MiniCandleChart = ({
       result.push({ open, close, high, low, val: close });
       current = close;
     }
-    return result;
-  }, [symbol, price, change, type, isPositive]);
 
-  // Scaler
-  const allValues = seriesData.flatMap((c) => [c.low, c.high]);
-  const minVal = Math.min(...allValues);
-  const maxVal = Math.max(...allValues);
-  const range = maxVal - minVal || 1;
+    const allValues = result.flatMap((c) => [c.low, c.high]);
+    const minVal = Math.min(...allValues);
+    const maxVal = Math.max(...allValues);
+    const range = maxVal - minVal || 1;
 
-  const paddingY = 6;
-  const innerHeight = height - paddingY * 2;
-  const getY = (val) => height - paddingY - ((val - minVal) / range) * innerHeight;
-  const stepX = width / (seriesData.length - 1 || 1);
+    const paddingY = 6;
+    const innerHeight = height - paddingY * 2;
+    const calcY = (val) => height - paddingY - ((val - minVal) / range) * innerHeight;
+    const stepX = width / (result.length - 1 || 1);
 
-  // Line Chart Calculations
-  const linePoints = useMemo(() => {
-    return seriesData.map((d, i) => ({
+    const pts = result.map((d, i) => ({
       x: i * stepX,
-      y: getY(d.val),
+      y: calcY(d.val),
     }));
-  }, [seriesData, stepX, minVal, range, innerHeight, height]);
 
-  const linePath = useMemo(() => {
-    if (linePoints.length === 0) return '';
-    return linePoints.reduce(
-      (acc, pt, i) => (i === 0 ? `M ${pt.x.toFixed(1)},${pt.y.toFixed(1)}` : `${acc} L ${pt.x.toFixed(1)},${pt.y.toFixed(1)}`),
-      ''
-    );
-  }, [linePoints]);
+    const lPath =
+      pts.length === 0
+        ? ''
+        : pts.reduce(
+            (acc, pt, i) => (i === 0 ? `M ${pt.x.toFixed(1)},${pt.y.toFixed(1)}` : `${acc} L ${pt.x.toFixed(1)},${pt.y.toFixed(1)}`),
+            ''
+          );
 
-  const areaPath = useMemo(() => {
-    if (linePoints.length === 0) return '';
-    const first = linePoints[0];
-    const last = linePoints[linePoints.length - 1];
-    return `${linePath} L ${last.x.toFixed(1)},${height} L ${first.x.toFixed(1)},${height} Z`;
-  }, [linePath, linePoints, height]);
+    const aPath =
+      pts.length === 0
+        ? ''
+        : `${lPath} L ${pts[pts.length - 1].x.toFixed(1)},${height} L ${pts[0].x.toFixed(1)},${height} Z`;
 
-  const lastPoint = linePoints[linePoints.length - 1] || { x: width, y: height / 2 };
+    const lPoint = pts[pts.length - 1] || { x: width, y: height / 2 };
+
+    return {
+      seriesData: result,
+      linePath: lPath,
+      areaPath: aPath,
+      lastPoint: lPoint,
+      getY: calcY,
+    };
+  }, [symbol, price, width, height, type, isPositive]);
 
   // Render Line Chart Mode (Default)
   if (type === 'line') {

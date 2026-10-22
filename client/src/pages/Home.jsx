@@ -14,16 +14,13 @@ import '../styles/Admin.css';
 export const MARKET_AND_CRYPTO_ASSETS = DEFAULT_MARKET_ASSETS;
 
 const Home = () => {
-  const [trendingStocks, setTrendingStocks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [trendingStocks, setTrendingStocks] = useState(() => getMarketAssets());
+  const loading = trendingStocks.length === 0;
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all'); // 'all' | 'equity' | 'crypto'
   const navigate = useNavigate();
 
   useEffect(() => {
-    setTrendingStocks(getMarketAssets());
-    setLoading(false);
-
     const unsubscribe = subscribeMarketUpdates((updated) => {
       setTrendingStocks(updated);
     });

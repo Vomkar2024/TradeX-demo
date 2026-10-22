@@ -17,8 +17,7 @@ const StockChart = () => {
   const navigate = useNavigate();
   const { balance, updateBalance } = useContext(GeneralContext);
 
-  const initialSymbol = (paramSymbol || 'RELIANCE').toUpperCase();
-  const [selectedSymbol, setSelectedSymbol] = useState(initialSymbol);
+  const selectedSymbol = (paramSymbol || 'RELIANCE').toUpperCase();
   const [stockRegistry, setStockRegistry] = useState(getStockRegistry);
   const [timeframe, setTimeframe] = useState('1M');
   const [chartType, setChartType] = useState('Line'); // 'Line' | 'Candles'
@@ -28,12 +27,6 @@ const StockChart = () => {
   const [loading, setLoading] = useState(false);
   const [userHoldings, setUserHoldings] = useState(0);
   const [hoveredData, setHoveredData] = useState(null);
-
-  useEffect(() => {
-    if (paramSymbol) {
-      setSelectedSymbol(paramSymbol.toUpperCase());
-    }
-  }, [paramSymbol]);
 
   useEffect(() => {
     const unsubscribe = subscribeMarketUpdates(() => {
@@ -72,7 +65,7 @@ const StockChart = () => {
   const chartPoints = useMemo(() => {
     const count = chartType === 'Candles' ? 24 : 32;
     const base = currentStock.basePrice;
-    let seed = selectedSymbol.split('').reduce((acc, c) => acc + c.charCodeAt(0), 100);
+    let seed = (selectedSymbol + timeframe).split('').reduce((acc, c) => acc + c.charCodeAt(0), 100);
     const pseudoRandom = () => {
       seed = (seed * 9301 + 49297) % 233280;
       return seed / 233280;
@@ -121,7 +114,6 @@ const StockChart = () => {
 
   const handleStockChange = (e) => {
     const sym = e.target.value;
-    setSelectedSymbol(sym);
     navigate(`/stock/${sym}`);
   };
 

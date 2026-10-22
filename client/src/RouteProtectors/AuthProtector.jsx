@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
 const AuthProtector = ({ children }) => {
-  useEffect(() => {
-    if (!localStorage.getItem('userType')) {
-      window.location.href = '/';
-    }
-  }, []);
+  const userType = localStorage.getItem('userType');
+  if (!userType) {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 };

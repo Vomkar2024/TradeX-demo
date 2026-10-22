@@ -14,33 +14,39 @@ const History = () => {
   const isDemo = localStorage.getItem('isDemoMode') === 'true' && userType !== 'admin' && email !== 'trader@tradex.com';
 
   useEffect(() => {
+    let isMounted = true;
+    const fetchHistoryData = async () => {
+      try {
+        const [ordersRes, transRes] = await Promise.all([
+          axiosInstance.get('/fetch-orders'),
+          axiosInstance.get('/fetch-transactions'),
+        ]);
+
+        if (!isMounted) return;
+
+        const userOrders = (ordersRes.data || [])
+          .filter((o) => o.user === userId)
+          .reverse();
+        const userTransactions = (transRes.data || [])
+          .filter((t) => t.user === userId)
+          .reverse();
+
+        setOrders(userOrders);
+        setTransactions(userTransactions);
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('History fetch error:', err);
+        toast.error('Failed to load transaction history');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
     fetchHistoryData();
-  }, []);
-
-  const fetchHistoryData = async () => {
-    setLoading(true);
-    try {
-      const [ordersRes, transRes] = await Promise.all([
-        axiosInstance.get('/fetch-orders'),
-        axiosInstance.get('/fetch-transactions'),
-      ]);
-
-      const userOrders = (ordersRes.data || [])
-        .filter((o) => o.user === userId)
-        .reverse();
-      const userTransactions = (transRes.data || [])
-        .filter((t) => t.user === userId)
-        .reverse();
-
-      setOrders(userOrders);
-      setTransactions(userTransactions);
-    } catch (err) {
-      console.error('History fetch error:', err);
-      toast.error('Failed to load transaction history');
-    } finally {
-      setLoading(false);
-    }
-  };
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
 
   return (
     <div className="page-container">

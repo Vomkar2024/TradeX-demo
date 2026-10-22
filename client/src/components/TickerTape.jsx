@@ -3,7 +3,6 @@ import { getMarketAssets, subscribeMarketUpdates } from '../utils/marketData';
 
 const TickerTape = ({ tickers: propTickers }) => {
   const [liveTickers, setLiveTickers] = useState(() => {
-    if (propTickers && propTickers.length > 0) return propTickers;
     return getMarketAssets().map((a) => ({
       symbol: a.symbol,
       price: a.basePrice || a.regularMarketOpen,
@@ -13,10 +12,7 @@ const TickerTape = ({ tickers: propTickers }) => {
   });
 
   useEffect(() => {
-    if (propTickers && propTickers.length > 0) {
-      setLiveTickers(propTickers);
-      return;
-    }
+    if (propTickers && propTickers.length > 0) return;
 
     const update = (assets) => {
       setLiveTickers(
@@ -32,8 +28,9 @@ const TickerTape = ({ tickers: propTickers }) => {
     return subscribeMarketUpdates(update);
   }, [propTickers]);
 
+  const activeTickers = propTickers && propTickers.length > 0 ? propTickers : liveTickers;
   // Duplicate items for continuous scrolling loop
-  const displayItems = [...liveTickers, ...liveTickers];
+  const displayItems = [...activeTickers, ...activeTickers];
 
   return (
     <div className="ticker-tape-container" aria-label="Live Market Ticker">

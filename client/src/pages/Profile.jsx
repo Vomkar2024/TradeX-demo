@@ -14,25 +14,32 @@ const Profile = () => {
 
   const userId = localStorage.getItem('userId');
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  const [refreshCount, setRefreshCount] = useState(0);
 
-  const fetchProfile = async () => {
-    setLoading(true);
-    try {
-      const res = await axiosInstance.get(`/fetch-user/${userId}`);
-      setUser(res.data);
-      if (res.data?.balance !== undefined) {
-        updateBalance(res.data.balance);
+  useEffect(() => {
+    let isMounted = true;
+    const loadProfile = async () => {
+      try {
+        const res = await axiosInstance.get(`/fetch-user/${userId}`);
+        if (!isMounted) return;
+        setUser(res.data);
+        if (res.data?.balance !== undefined) {
+          updateBalance(res.data.balance);
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Fetch user error:', err);
+        toast.error('Failed to load profile');
+      } finally {
+        if (isMounted) setLoading(false);
       }
-    } catch (err) {
-      console.error('Fetch user error:', err);
-      toast.error('Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadProfile();
+    return () => {
+      isMounted = false;
+    };
+  }, [userId, updateBalance, refreshCount]);
 
   const handleTransaction = async (e) => {
     e.preventDefault();
@@ -66,7 +73,7 @@ const Profile = () => {
         }
         toast.success(`${transType} of ₹${transAmount.toLocaleString('en-IN')} successful!`);
         setAmount('');
-        fetchProfile();
+        setRefreshCount((c) => c + 1);
       }
     } catch (err) {
       console.error('Transaction error:', err);

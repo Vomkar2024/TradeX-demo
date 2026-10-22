@@ -15,3 +15,6 @@ const User = mongoose.models.users || mongoose.model("users", userSchema);
 module.exports = User;
 module.exports.User = User;
 module.exports.userSchema = userSchema;
+module.exports.UserSchema = userSchema;
+module.exports.usersSchema = userSchema;
+module.exports.UsersSchema = userSchema;

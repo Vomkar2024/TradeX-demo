@@ -1,10 +1,11 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axiosInstance from "../components/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import demoStore from "../utils/demoStore";
+import { GeneralContext } from "./GeneralContextCore";
 
-export const GeneralContext = createContext();
+export { GeneralContext };
 
 export const GeneralContextProvider = ({ children }) => {
   const [username, setUsername] = useState("");

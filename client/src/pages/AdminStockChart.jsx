@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../components/axiosInstance';
 import { getAssetBySymbol, subscribeMarketUpdates } from '../utils/marketData';
 import { fetchUserRegistry, resolveUserIdentity } from '../utils/userLookup';
-import { FiTrendingUp, FiDollarSign, FiUsers, FiActivity, FiArrowUpRight, FiArrowDownRight } from 'react-icons/fi';
+import { FiTrendingUp, FiDollarSign, FiUsers, FiActivity } from 'react-icons/fi';
 import '../styles/Admin.css';
 
 const TIMEFRAMES = ['1D', '1W', '1M', '1Y', 'ALL'];
@@ -25,38 +25,50 @@ const AdminStockChart = () => {
 
   const isCrypto = (asset.category || '').toLowerCase() === 'crypto' || asset.exchange === 'Crypto';
 
-  useEffect(() => {
+  const [prevUpperSym, setPrevUpperSym] = useState(upperSym);
+  if (upperSym !== prevUpperSym) {
+    setPrevUpperSym(upperSym);
     setAsset(getAssetBySymbol(upperSym));
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStockData = async () => {
+      try {
+        const [stocksRes, ordersRes, usersReg] = await Promise.all([
+          axiosInstance.get('/fetch-stocks').catch(() => ({ data: [] })),
+          axiosInstance.get('/fetch-orders').catch(() => ({ data: [] })),
+          fetchUserRegistry(axiosInstance),
+        ]);
+
+        if (!isMounted) return;
+
+        const symHoldings = (stocksRes.data || []).filter(
+          (s) => (s.symbol || '').toUpperCase() === upperSym
+        );
+        const symOrders = (ordersRes.data || []).filter(
+          (o) => (o.symbol || '').toUpperCase() === upperSym
+        ).reverse();
+
+        setHoldings(symHoldings);
+        setOrders(symOrders);
+        setUserMap(usersReg || {});
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Failed to fetch stock admin data:', err);
+      }
+    };
+
     fetchStockData();
 
     const unsubscribe = subscribeMarketUpdates(() => {
       setAsset(getAssetBySymbol(upperSym));
     });
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [upperSym]);
-
-  const fetchStockData = async () => {
-    try {
-      const [stocksRes, ordersRes, usersReg] = await Promise.all([
-        axiosInstance.get('/fetch-stocks').catch(() => ({ data: [] })),
-        axiosInstance.get('/fetch-orders').catch(() => ({ data: [] })),
-        fetchUserRegistry(axiosInstance),
-      ]);
-
-      const symHoldings = (stocksRes.data || []).filter(
-        (s) => (s.symbol || '').toUpperCase() === upperSym
-      );
-      const symOrders = (ordersRes.data || []).filter(
-        (o) => (o.symbol || '').toUpperCase() === upperSym
-      ).reverse();
-
-      setHoldings(symHoldings);
-      setOrders(symOrders);
-      setUserMap(usersReg || {});
-    } catch (err) {
-      console.error('Failed to fetch stock admin data:', err);
-    }
-  };
 
   // Embed TradingView script when switching to tradingview mode
   useEffect(() => {
@@ -96,7 +108,7 @@ const AdminStockChart = () => {
   const chartPoints = useMemo(() => {
     const count = chartType === 'Candles' ? 26 : 34;
     const base = Number(asset.basePrice || asset.regularMarketOpen || 100);
-    let seed = upperSym.split('').reduce((acc, c) => acc + c.charCodeAt(0), 100);
+    let seed = (upperSym + timeframe).split('').reduce((acc, c) => acc + c.charCodeAt(0), 100);
     const pseudoRandom = () => {
       seed = (seed * 9301 + 49297) % 233280;
       return seed / 233280;
@@ -127,7 +139,7 @@ const AdminStockChart = () => {
       current = close;
     }
     return points;
-  }, [upperSym, asset.basePrice, asset.regularMarketOpen, asset.changePct, chartType, timeframe]);
+  }, [upperSym, asset.basePrice, asset.regularMarketOpen, asset.changePct, asset.regularMarketChangePercent, chartType, timeframe]);
 
   // Chart bounds & geometry
   const yValues = chartPoints.flatMap((p) => [p.low, p.high]);

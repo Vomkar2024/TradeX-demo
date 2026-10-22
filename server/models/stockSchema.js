@@ -15,3 +15,6 @@ const Stock = mongoose.models.stocks || mongoose.model("stocks", stocksSchema);
 module.exports = Stock;
 module.exports.Stock = Stock;
 module.exports.stocksSchema = stocksSchema;
+module.exports.stockSchema = stocksSchema;
+module.exports.StocksSchema = stocksSchema;
+module.exports.StockSchema = stocksSchema;
