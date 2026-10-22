@@ -12,20 +12,20 @@ const Register = ({ setIsLoginBox }) => {
 
   return (
     <form className="authForm card shadow-lg border-0" onSubmit={handleRegister}>
-      <div className="text-center mb-3 mb-md-3.5">
+      <div className="text-center mb-4">
         <div
-          className="brand-logo-badge mx-auto mb-2"
-          style={{ width: '40px', height: '40px', fontSize: '1.05rem' }}
+          className="brand-logo-badge mx-auto mb-2.5"
+          style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
         >
           TX
         </div>
-        <h3 className="fw-bold mb-1 fs-4">Create TradeX Account</h3>
-        <p className="text-secondary small mb-0" style={{ fontSize: '0.85rem' }}>
+        <h3 className="fw-bold mb-1.5 fs-4 text-white">Create TradeX Account</h3>
+        <p className="text-secondary small mb-0" style={{ fontSize: '0.88rem' }}>
           Create an account to start paper trading
         </p>
       </div>
 
-      <div className="mb-3 text-start">
+      <div className="mb-4 text-start">
         <label htmlFor="regUsernameInput" className="auth-form-label">
           Username
         </label>
@@ -40,7 +40,7 @@ const Register = ({ setIsLoginBox }) => {
         />
       </div>
 
-      <div className="mb-3 text-start">
+      <div className="mb-4 text-start">
         <label htmlFor="regEmailInput" className="auth-form-label">
           Email Address
         </label>
@@ -55,7 +55,7 @@ const Register = ({ setIsLoginBox }) => {
         />
       </div>
 
-      <div className="mb-3 text-start">
+      <div className="mb-4 text-start">
         <label htmlFor="regPasswordInput" className="auth-form-label">
           Password
         </label>
@@ -81,46 +81,16 @@ const Register = ({ setIsLoginBox }) => {
         </div>
       </div>
 
-      <div className="mb-3.5 text-start">
-        <label className="auth-form-label">Account Type</label>
-        <div
-          className="p-2.5 px-3 rounded-3"
-          style={{
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-          }}
+      <div className="pt-2 pb-1">
+        <button
+          type="submit"
+          className="btn btn-primary w-100 py-3 fw-semibold shadow-sm mb-3.5 btn-auth-submit"
         >
-          <div className="d-flex align-items-center justify-content-between">
-            <div className="d-flex align-items-center gap-2">
-              <span style={{ fontSize: '1.1rem' }}>📈</span>
-              <div>
-                <div className="text-white fw-semibold" style={{ fontSize: '0.85rem' }}>
-                  Trader Account
-                </div>
-                <div className="text-secondary" style={{ fontSize: '0.75rem' }}>
-                  Virtual trading with live charting
-                </div>
-              </div>
-            </div>
-            <span
-              className="badge text-bg-success px-2 py-1"
-              style={{ fontSize: '0.75rem', letterSpacing: '0.02em' }}
-            >
-              ₹500 Balance
-            </span>
-          </div>
-        </div>
+          Create Account
+        </button>
       </div>
 
-      <button
-        type="submit"
-        className="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm mb-2.5 btn-auth-submit"
-        style={{ fontSize: '0.98rem' }}
-      >
-        Create Account
-      </button>
-
-      <p className="mt-2.5 pt-1 text-center text-secondary small mb-0" style={{ fontSize: '0.86rem' }}>
+      <p className="mt-1 text-center text-secondary small mb-0" style={{ fontSize: '0.88rem' }}>
         Already have an account?{' '}
         <span className="auth-switch-link" onClick={() => setIsLoginBox(true)}>
           Sign In

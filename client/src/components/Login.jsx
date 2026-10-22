@@ -3,19 +3,11 @@ import { GeneralContext } from '../context/GeneralContext';
 import axiosInstance from './axiosInstance';
 import toast from 'react-hot-toast';
 
-const Login = ({ setIsLoginBox, externalFill }) => {
+const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode }) => {
   const { setEmail, setPassword, login, loginDemo } = useContext(GeneralContext);
   const [localEmail, setLocalEmail] = useState('');
   const [localPassword, setLocalPassword] = useState('');
 
-  useEffect(() => {
-    if (externalFill?.email) {
-      setLocalEmail(externalFill.email);
-      setLocalPassword(externalFill.password);
-    }
-  }, [externalFill]);
-
-  const [isForgotMode, setIsForgotMode] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [generatedOtpHint, setGeneratedOtpHint] = useState('');
@@ -24,16 +16,20 @@ const Login = ({ setIsLoginBox, externalFill }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Clean reset form state when leaving forgot password mode
+  useEffect(() => {
+    if (!isForgotMode) {
+      setOtpSent(false);
+      setOtpCode('');
+      setGeneratedOtpHint('');
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+  }, [isForgotMode]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     await login();
-  };
-
-  const fillCredentials = (emailVal, passVal) => {
-    setLocalEmail(emailVal);
-    setLocalPassword(passVal);
-    setEmail(emailVal);
-    setPassword(passVal);
   };
 
   const handleRequestOtp = async (e) => {
@@ -118,15 +114,15 @@ const Login = ({ setIsLoginBox, externalFill }) => {
   if (isForgotMode) {
     return (
       <div className="authForm card shadow-lg border-0">
-        <div className="text-center mb-3.5">
+        <div className="text-center mb-4">
           <div
-            className="brand-logo-badge mx-auto mb-2"
-            style={{ width: '40px', height: '40px', fontSize: '1.05rem' }}
+            className="brand-logo-badge mx-auto mb-2.5"
+            style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
           >
             TX
           </div>
-          <h3 className="fw-bold mb-1 fs-4">Reset Password</h3>
-          <p className="text-secondary small mb-0" style={{ fontSize: '0.85rem' }}>
+          <h3 className="fw-bold mb-1.5 fs-4 text-white">Reset Password</h3>
+          <p className="text-secondary small mb-0" style={{ fontSize: '0.88rem' }}>
             {otpSent
               ? 'Enter the 6-digit code and choose a new password'
               : 'Enter your registered email to receive a verification code'}
@@ -135,7 +131,7 @@ const Login = ({ setIsLoginBox, externalFill }) => {
 
         {!otpSent ? (
           <form onSubmit={handleRequestOtp}>
-            <div className="mb-3 text-start">
+            <div className="mb-4 text-start">
               <label htmlFor="forgotEmailInput" className="auth-form-label">
                 Registered Email Address
               </label>
@@ -155,44 +151,14 @@ const Login = ({ setIsLoginBox, externalFill }) => {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm mb-3 btn-auth-submit"
-            >
-              {isSubmitting ? 'Sending Code...' : 'Send Verification Code →'}
-            </button>
-
-            <div className="demo-quick-fill mt-3 mb-2 text-center">
-              <span className="text-secondary small d-block mb-1.5" style={{ fontSize: '0.78rem' }}>
-                Test Accounts:
-              </span>
-              <div className="d-flex flex-wrap gap-2 justify-content-center">
-                <button
-                  type="button"
-                  className="btn-quick-fill"
-                  onClick={() => {
-                    setLocalEmail('trader@tradex.com');
-                    setEmail('trader@tradex.com');
-                  }}
-                  title="Auto-fill Trader email"
-                >
-                  <span>👤 Trader:</span>
-                  <code>trader@tradex.com</code>
-                </button>
-                <button
-                  type="button"
-                  className="btn-quick-fill btn-quick-fill-admin"
-                  onClick={() => {
-                    setLocalEmail('admin@tradex.com');
-                    setEmail('admin@tradex.com');
-                  }}
-                  title="Auto-fill Admin email"
-                >
-                  <span>🛡️ Admin:</span>
-                  <code>admin@tradex.com</code>
-                </button>
-              </div>
+            <div className="pt-2 pb-1">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn btn-primary w-100 py-3 fw-semibold shadow-sm mb-1 btn-auth-submit"
+              >
+                {isSubmitting ? 'Sending Code...' : 'Send Verification Code →'}
+              </button>
             </div>
           </form>
         ) : (
@@ -204,8 +170,8 @@ const Login = ({ setIsLoginBox, externalFill }) => {
               </div>
             )}
 
-            <div className="mb-3 text-start">
-              <div className="d-flex justify-content-between align-items-center mb-1.5">
+            <div className="mb-4 text-start">
+              <div className="d-flex justify-content-between align-items-center mb-2">
                 <label htmlFor="otpCodeInput" className="auth-form-label mb-0">
                   6-Digit Verification Code
                 </label>
@@ -230,14 +196,14 @@ const Login = ({ setIsLoginBox, externalFill }) => {
               />
             </div>
 
-            <div className="mb-3 text-start">
+            <div className="mb-4 text-start">
               <label htmlFor="newPasswordInput" className="auth-form-label">
                 New Password
               </label>
               <div className="position-relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  className="form-control auth-input-clean auth-input-compact w-100"
+                  className="form-control auth-input-clean auth-input-compact w-100 pe-5"
                   id="newPasswordInput"
                   placeholder="At least 6 characters"
                   value={newPassword}
@@ -255,7 +221,7 @@ const Login = ({ setIsLoginBox, externalFill }) => {
               </div>
             </div>
 
-            <div className="mb-3 text-start">
+            <div className="mb-4 text-start">
               <label htmlFor="confirmPasswordInput" className="auth-form-label">
                 Confirm New Password
               </label>
@@ -270,48 +236,37 @@ const Login = ({ setIsLoginBox, externalFill }) => {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm mb-3 btn-auth-submit"
-            >
-              {isSubmitting ? 'Updating Password...' : 'Reset Password & Sign In →'}
-            </button>
+            <div className="pt-2 pb-1">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn btn-primary w-100 py-3 fw-semibold shadow-sm mb-3.5 btn-auth-submit"
+              >
+                {isSubmitting ? 'Updating Password...' : 'Reset Password & Sign In →'}
+              </button>
+            </div>
           </form>
         )}
-
-        <div className="text-center pt-3 border-top border-secondary-subtle">
-          <button
-            type="button"
-            className="btn-back-to-login"
-            onClick={() => {
-              setIsForgotMode(false);
-              setOtpSent(false);
-            }}
-          >
-            ← Back to Sign In
-          </button>
-        </div>
       </div>
     );
   }
 
   return (
     <form className="authForm card shadow-lg border-0" onSubmit={handleLogin}>
-      <div className="text-center mb-3 mb-md-3.5">
+      <div className="text-center mb-4">
         <div
-          className="brand-logo-badge mx-auto mb-2"
-          style={{ width: '40px', height: '40px', fontSize: '1.05rem' }}
+          className="brand-logo-badge mx-auto mb-2.5"
+          style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
         >
           TX
         </div>
-        <h3 className="fw-bold mb-1 fs-4">Sign In to TradeX</h3>
-        <p className="text-secondary small mb-0" style={{ fontSize: '0.85rem' }}>
+        <h3 className="fw-bold mb-1.5 fs-4 text-white">Sign In to TradeX</h3>
+        <p className="text-secondary small mb-0" style={{ fontSize: '0.88rem' }}>
           Enter your credentials to access your trading account
         </p>
       </div>
 
-      <div className="mb-3 text-start">
+      <div className="mb-4 text-start">
         <label htmlFor="loginEmailInput" className="auth-form-label">
           Email Address
         </label>
@@ -330,8 +285,8 @@ const Login = ({ setIsLoginBox, externalFill }) => {
         />
       </div>
 
-      <div className="mb-3.5 text-start">
-        <div className="d-flex justify-content-between align-items-center mb-1.5">
+      <div className="mb-4 text-start">
+        <div className="d-flex justify-content-between align-items-center mb-2">
           <label htmlFor="loginPasswordInput" className="auth-form-label mb-0">
             Password
           </label>
@@ -374,15 +329,16 @@ const Login = ({ setIsLoginBox, externalFill }) => {
         </div>
       </div>
 
-      <button
-        type="submit"
-        className="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm mb-2.5 btn-auth-submit"
-        style={{ fontSize: '0.98rem' }}
-      >
-        Sign In
-      </button>
+      <div className="pt-2 pb-1">
+        <button
+          type="submit"
+          className="btn btn-primary w-100 py-3 fw-semibold shadow-sm mb-3.5 btn-auth-submit"
+        >
+          Sign In
+        </button>
+      </div>
 
-      <p className="mt-2.5 pt-1 mb-2 text-center text-secondary small" style={{ fontSize: '0.86rem' }}>
+      <p className="mt-1 mb-3 text-center text-secondary small" style={{ fontSize: '0.88rem' }}>
         Don't have an account?{' '}
         <span className="auth-switch-link" onClick={() => setIsLoginBox(false)}>
           Create an account

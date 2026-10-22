@@ -12,6 +12,7 @@ export const GeneralContextProvider = ({ children }) => {
   const [password, setPassword] = useState("");
   const [usertype, setUsertype] = useState("customer");
   const [balance, setBalance] = useState(() => Number(localStorage.getItem("balance") || 0));
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const updateBalance = (newBalance) => {
     const num = Number(newBalance);
@@ -179,6 +180,8 @@ export const GeneralContextProvider = ({ children }) => {
         logout,
         loginDemo,
         resetDemoData,
+        showAuthModal,
+        setShowAuthModal,
       }}
     >
       {children}

@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { GeneralContext } from '../context/GeneralContext';
 
 const Navbar = () => {
-  const { logout, resetDemoData, loginDemo, balance } = useContext(GeneralContext);
+  const { logout, resetDemoData, loginDemo, balance, showAuthModal } = useContext(GeneralContext);
 
   const userType = localStorage.getItem('userType');
   const rawUsername = localStorage.getItem('username');
@@ -29,6 +29,10 @@ const Navbar = () => {
   const handleLogout = async () => {
     await logout();
   };
+
+  if (showAuthModal) {
+    return null;
+  }
 
   return (
     <nav className="navbar-custom">
