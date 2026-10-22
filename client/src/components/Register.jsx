@@ -90,7 +90,7 @@ const Register = ({ setIsLoginBox }) => {
         </button>
       </div>
 
-      <p className="mt-1 text-center text-secondary small mb-0" style={{ fontSize: '0.88rem' }}>
+      <p className="auth-switch-prompt text-center text-secondary small mb-0">
         Already have an account?{' '}
         <span className="auth-switch-link" onClick={() => setIsLoginBox(true)}>
           Sign In

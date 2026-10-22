@@ -348,7 +348,7 @@ const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode, externalFill }) =
         </button>
       </div>
 
-      <p className="mt-1 mb-3 text-center text-secondary small" style={{ fontSize: '0.88rem' }}>
+      <p className="auth-switch-prompt text-center text-secondary small">
         Don't have an account?{' '}
         <span className="auth-switch-link" onClick={() => setIsLoginBox(false)}>
           Create an account
