@@ -14,8 +14,8 @@ const Register = ({ setIsLoginBox }) => {
     <form className="authForm card shadow-lg border-0" onSubmit={handleRegister}>
       <div className="text-center mb-4">
         <div
-          className="brand-logo-badge mx-auto mb-2.5"
-          style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
+          className="brand-logo-badge mx-auto mb-3"
+          style={{ width: '42px', height: '42px', fontSize: '1.1rem', marginBottom: '1.25rem' }}
         >
           TX
         </div>

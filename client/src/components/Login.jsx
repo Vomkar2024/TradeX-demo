@@ -3,10 +3,20 @@ import { GeneralContext } from '../context/GeneralContext';
 import axiosInstance from './axiosInstance';
 import toast from 'react-hot-toast';
 
-const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode }) => {
+const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode, externalFill }) => {
   const { setEmail, setPassword, login, loginDemo } = useContext(GeneralContext);
   const [localEmail, setLocalEmail] = useState('');
   const [localPassword, setLocalPassword] = useState('');
+
+  // Handle external credentials fill from Quick Fill dropdown
+  useEffect(() => {
+    if (externalFill?.email) {
+      setLocalEmail(externalFill.email);
+      setLocalPassword(externalFill.password);
+      setEmail(externalFill.email);
+      setPassword(externalFill.password);
+    }
+  }, [externalFill, setEmail, setPassword]);
 
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -116,8 +126,8 @@ const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode }) => {
       <div className="authForm card shadow-lg border-0">
         <div className="text-center mb-4">
           <div
-            className="brand-logo-badge mx-auto mb-2.5"
-            style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
+            className="brand-logo-badge mx-auto mb-3"
+            style={{ width: '42px', height: '42px', fontSize: '1.1rem', marginBottom: '1.25rem' }}
           >
             TX
           </div>
@@ -255,8 +265,8 @@ const Login = ({ setIsLoginBox, isForgotMode, setIsForgotMode }) => {
     <form className="authForm card shadow-lg border-0" onSubmit={handleLogin}>
       <div className="text-center mb-4">
         <div
-          className="brand-logo-badge mx-auto mb-2.5"
-          style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
+          className="brand-logo-badge mx-auto mb-3"
+          style={{ width: '42px', height: '42px', fontSize: '1.1rem', marginBottom: '1.25rem' }}
         >
           TX
         </div>
